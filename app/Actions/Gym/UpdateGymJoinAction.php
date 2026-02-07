@@ -5,8 +5,9 @@ namespace App\Actions\Gym;
 use Lorisleiva\Actions\Concerns\AsAction;
 use Lorisleiva\Actions\ActionRequest;
 use App\Services\GymService;
+use Illuminate\Http\JsonResponse;
 
-class UpdateGymInviteStatusAction
+class UpdateGymJoinAction
 {
     use AsAction;
 
@@ -16,26 +17,21 @@ class UpdateGymInviteStatusAction
 
     public function authorize(ActionRequest $request): bool
     {
-        $gymUser = $this->gymService->findGymUserByGymIdAndUserId($request->route('gymId'), $request->route('userId'));
+        $gymUser = $this->gymService->findGymUserByGymIdAndUserId($request->route('gymId'), auth()->user()->id);
 
         if (!$gymUser) {
             return false;
         }
 
-        if ($gymUser->user_id !== auth()->user()->id) {
+        if ($gymUser->role !== \App\Models\GymUser::ROLE_OWNER && $gymUser->role !== \App\Models\GymUser::ROLE_ADMIN) {
             return false;
         }
 
-        // self invited users can't update their status
-        if ($gymUser->invited_by !== 'GYM') {
+        if ($gymUser->status !== \App\Models\GymUser::STATUS_ACTIVE) {
             return false;
         }
-
-        // add status to the request
-        $request->merge(['role' => $gymUser->role]);
 
         return true;
-
     }
 
     public function rules(): array
@@ -49,26 +45,28 @@ class UpdateGymInviteStatusAction
     {
         $user_id = $data['user_id'];
         $gymId = $data['gym_id'];
-        $role = $data['role'];
-        $status = $data['status'] ?? \App\Models\GymUser::STATUS_ACTIVE;
-        
+        $status = $data['status'];
+
         $gymUser = $this->gymService->findGymUserByGymIdAndUserId($gymId, $user_id);
+
         if (!$gymUser) {
-            $gymUser = $this->gymService->createGymUser($gymId, $user_id, [
-                'role' => $role,
-                'status' => $status,
-            ]);
-        } else {
-            $gymUser = $this->gymService->updateGymUser($gymId, $user_id, [
-                'role' => $role,
-                'status' => $status,
-            ]);
+            return [
+                'success' => false,
+                'status_code' => 404,
+                'message' => 'Gym user not found',
+            ];
         }
+
+        $gymUser = $this->gymService->updateGymUser($gymId, $user_id, [
+            'status' => $status,
+        ]);
+
+        // @TODO: Send notification to the user
 
         return [
             'success' => true,
             'status_code' => 200,
-            'message' => 'Gym user created successfully',
+            'message' => 'Gym user updated successfully',
             'data' => [
                 'gymUser' => $gymUser,
             ],
@@ -77,13 +75,15 @@ class UpdateGymInviteStatusAction
 
     public function asController(ActionRequest $request): array
     {
-        $data = $request->validated();
-
         return $this->handle([
             'user_id' => $request->route('userId'),
             'gym_id' => $request->route('gymId'),
-            'status' => $data['status'],
-            'role' => $request->input('role'),
+            'status' => $request->validated('status'),
         ]);
+    }
+
+    public function jsonResponse(array $data): JsonResponse
+    {
+        return response()->json($data, $data['status_code'] ?? 200);
     }
 }

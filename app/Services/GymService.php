@@ -73,4 +73,9 @@ class GymService
     {
         return $this->gymUserRepository->updateGymUser($gymId, $userId, $data);
     }
+
+    public function findGym(string $gymId): ?Gym
+    {
+        return $this->gymRepository->findById($gymId);
+    }
 }

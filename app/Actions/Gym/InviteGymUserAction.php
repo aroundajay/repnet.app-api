@@ -35,7 +35,6 @@ class InviteGymUserAction
         }
 
         return true;
-
     }
 
     public function rules(): array
