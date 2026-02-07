@@ -44,6 +44,7 @@ class GymUser extends Model
         'role',
         'membership_end',
         'status',
+        'invited_by',
     ];
 
     /**

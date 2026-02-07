@@ -34,6 +34,9 @@ return new class extends Migration
             // Optional membership expiration date
             $table->timestamp('membership_end')->nullable();
 
+            // Invited by (GYM or SELF)
+            $table->enum('invited_by', ['GYM', 'SELF'])->default('GYM');
+
             // Membership status (pending approval, active, or rejected)
             $table->enum('status', ['pending', 'active', 'rejected'])->default('pending');
             
