@@ -36,6 +36,17 @@ class SendOtpAction
         protected SmsService $smsService
     ) {}
 
+    public function asJob(string $type,
+    string $identifier,
+    array $userProvidedRequestData = []): void
+    {
+        $this->handle(
+            type: $type,
+            identifier: $identifier,
+            userProvidedRequestData: $userProvidedRequestData
+        );
+    }
+
     /*
     |--------------------------------------------------------------------------
     | HTTP Controller Interface

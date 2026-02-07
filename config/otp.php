@@ -74,6 +74,11 @@ return [
             'expiry_minutes' => 10,
             'callback' => \App\Actions\User\UpdateUserAction::class,
         ],
+
+        'invite_to_gym' => [
+            'expiry_minutes' => 60,
+            'callback' => \App\Actions\Gym\UpdateGymInviteStatusAction::class,
+        ],
     ],
 
     /*

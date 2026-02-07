@@ -12,6 +12,9 @@ use App\Actions\User\UpdateUserAction;
 use App\Actions\Otp\SendOtpAction;
 use App\Actions\Otp\VerifyOtpAction;
 use App\Actions\Auth\LoginAction;
+use App\Actions\Gym\CreateGymAction;
+use App\Actions\Gym\InviteGymUserAction;
+use App\Actions\Gym\UpdateGymInviteStatusAction;
 /*
 |--------------------------------------------------------------------------
 | Public Routes (No Authentication Required)
@@ -62,6 +65,18 @@ Route::middleware('auth:sanctum')->group(function () {
             ];
         });
         Route::put('', UpdateUserAction::class)->name('user.update');
+    });
+
+    // Gym routes
+    Route::prefix('gyms')->group(function () {
+        // Gym routes - create gym (current user becomes owner)
+        Route::post('', CreateGymAction::class)->name('gyms.create');
+
+        // Gym routes - invite user to gym
+        Route::post('{gymId}/invite', InviteGymUserAction::class)->name('gyms.invite');
+
+        // Gym routes - update gym invite status
+        Route::put('{gymId}/invite/{userId}/status', UpdateGymInviteStatusAction::class)->name('gyms.update.invite.status');
     });
 
     // Add your protected API routes here

@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 /**
  * GymUser model for role-based gym membership.
  * 
- * Supports three roles: OWNER, TRAINER, MEMBER.
+ * Supports four roles: OWNER, ADMIN, TRAINER, MEMBER.
  * Tracks membership status and optional expiration.
  */
 class GymUser extends Model
@@ -22,6 +22,7 @@ class GymUser extends Model
      * Role constants.
      */
     public const ROLE_OWNER = 'OWNER';
+    public const ROLE_ADMIN = 'ADMIN';
     public const ROLE_TRAINER = 'TRAINER';
     public const ROLE_MEMBER = 'MEMBER';
 
@@ -107,6 +108,14 @@ class GymUser extends Model
     public function isOwner(): bool
     {
         return $this->role === self::ROLE_OWNER;
+    }
+
+    /**
+     * Check if the user is an admin.
+     */
+    public function isAdmin(): bool
+    {
+        return $this->role === self::ROLE_ADMIN;
     }
 
     /**

@@ -163,6 +163,19 @@ class OtpService
 
                 return $data;
 
+                case 'invite_to_gym':
+                    $data = Arr::only($userProvidedRequestData, ['name']);
+    
+                    $isEmail = $this->isEmail($identifier);
+                    $data[$isEmail ? 'email' : 'mobile'] = $identifier;
+                    $data[$isEmail ? 'email_verified_at' : 'mobile_verified_at'] = now();
+
+                    $user = $this->userRepository->create($data);
+
+                    return array_merge([
+                        'user_id' => $user->id,
+                    ], Arr::only($userProvidedRequestData, ['gym_id', 'role', 'status']));
+    
             case 'login':
                 return [
                     'identifier' => $identifier,

@@ -27,13 +27,13 @@ return new class extends Migration
             // Foreign keys to gyms and users tables
             $table->foreignUuid('gym_id')->constrained()->cascadeOnDelete();
             $table->foreignUuid('user_id')->constrained()->cascadeOnDelete();
-            
+
             // Role within the gym (OWNER, TRAINER, or MEMBER)
-            $table->enum('role', ['OWNER', 'TRAINER', 'MEMBER']);
-            
+            $table->enum('role', ['OWNER', 'ADMIN', 'TRAINER', 'MEMBER']);
+
             // Optional membership expiration date
             $table->timestamp('membership_end')->nullable();
-            
+
             // Membership status (pending approval, active, or rejected)
             $table->enum('status', ['pending', 'active', 'rejected'])->default('pending');
             
