@@ -1,0 +1,51 @@
+version: "3.8"
+
+services:
+  redis:
+    image: redis:latest
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
+      interval: 1s
+      timeout: 3s
+      retries: 5
+    command: ["redis-server"]
+    networks:
+      - bridge
+
+  minio:
+    image: docker.io/bitnami/minio:2025.3.12
+    ports:
+      - "9001:9001"
+      - "9000:9000"
+    networks:
+      - bridge
+    volumes:
+      - "minio_data:/data"
+    environment:
+      - MINIO_ROOT_USER=miniouser
+      - MINIO_ROOT_PASSWORD=miniopasword
+      # Default bucket with public policy (format: bucket:policy)
+      - MINIO_DEFAULT_BUCKETS=repnet:public
+      # Default region for S3 compatibility
+      - MINIO_REGION_NAME=ap-south-1
+      # Access key credentials for S3 API access
+      - MINIO_ACCESS_KEY=BtjC9hEG2wuAVagSHV8e
+      - MINIO_SECRET_KEY=Dt58m65iuRGkzmWSOn6NLQoRDKUnJ527w96CZNx8
+
+  mailpit:
+    image: axllent/mailpit
+    ports:
+      - "${FORWARD_MAILPIT_PORT:-1025}:1025"
+      - "${FORWARD_MAILPIT_DASHBOARD_PORT:-8025}:8025"
+    environment:
+      - MP_WEBHOOK_URL=${EMAIL_WEBHOOK_URL}
+    networks:
+      - bridge
+
+networks:
+  bridge:
+    driver: bridge
+
+volumes:
+  minio_data:
+    driver: local

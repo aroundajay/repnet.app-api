@@ -53,9 +53,9 @@ class UserRepository
      * @param string $id The user UUID
      * @return User|null
      */
-    public function findById(string $id): ?User
+    public function findById(string $id, array $with = []): ?User
     {
-        return User::find($id);
+        return User::with($with)->find($id);
     }
 
     /**
@@ -64,9 +64,9 @@ class UserRepository
      * @param string $email The email address
      * @return User|null
      */
-    public function findByEmail(string $email): ?User
+    public function findByEmail(string $email, array $with = []): ?User
     {
-        return User::where('email', $email)->first();
+        return User::with($with)->where('email', $email)->first();
     }
 
     /**
@@ -75,9 +75,9 @@ class UserRepository
      * @param string $mobile The mobile number
      * @return User|null
      */
-    public function findByMobile(string $mobile): ?User
+    public function findByMobile(string $mobile, array $with = []): ?User
     {
-        return User::where('mobile', $mobile)->first();
+        return User::with($with)->where('mobile', $mobile)->first();
     }
 
     /**
@@ -86,9 +86,10 @@ class UserRepository
      * @param string $identifier Email or mobile number
      * @return User|null
      */
-    public function findByIdentifier(string $identifier): ?User
+    public function findByIdentifier(string $identifier, array $with = []): ?User
     {
-        return User::where('email', $identifier)
+        return User::with($with)
+            ->where('email', $identifier)
             ->orWhere('mobile', $identifier)
             ->first();
     }

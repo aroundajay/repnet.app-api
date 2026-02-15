@@ -22,20 +22,23 @@ return new class extends Migration
         Schema::create('files', function (Blueprint $table) {
             // Primary key as UUID
             $table->uuid('id')->primary();
-            
+
             // Type of file (IMAGE or VIDEO)
             $table->enum('type', ['IMAGE', 'VIDEO']);
-            
+
             // Storage path to the file
             $table->string('path');
-            
+
+            // Storage path of thumbnail
+            $table->string('thumbnail_path')->nullable();
+
             // Foreign key to users table (who uploaded the file)
             $table->foreignUuid('uploaded_by')->constrained('users')->cascadeOnDelete();
-            
+
             // Timestamp when file was deleted from actual storage
             // Null means file still exists in storage
             $table->timestamp('deleted_from_storage_at')->nullable();
-            
+
             // Standard Laravel timestamps and soft deletes
             $table->timestamps();
             $table->softDeletes();

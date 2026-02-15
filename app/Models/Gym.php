@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\HasMetadata;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -9,6 +10,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 /**
  * Gym model representing fitness facilities.
@@ -18,7 +21,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  */
 class Gym extends Model
 {
-    use HasFactory, HasUuids, SoftDeletes;
+    use HasFactory, HasUuids, SoftDeletes, HasMetadata;
 
     /**
      * The attributes that are mass assignable.
@@ -47,6 +50,34 @@ class Gym extends Model
             'is_public' => 'boolean',
         ];
     }
+
+    /**
+     * The accessors to append to the model's array form.
+     *
+     * @var array
+     */
+    protected $appends = ['metadata_key_value'];
+
+    /**
+     * Array of keys that are updateable of metadata
+     */
+    protected $updateable_metadata = [
+        'address',
+        'operating_hours',
+        'offers_personal_training',
+    ];
+
+    /**
+     * Array of keys that are multiple updateable of metadata
+     */
+    protected $multiple_metadata = [
+        'operating_hours',
+    ];
+
+    /**
+     * Array of keys that are hide in metadata
+     */
+    protected $hide_metadata = [];
 
     /*
     |--------------------------------------------------------------------------
@@ -108,6 +139,32 @@ class Gym extends Model
     public function messageThread(): MorphOne
     {
         return $this->morphOne(MessageThread::class, 'messageable');
+    }
+
+    /**
+     * Get the files for this gym.
+     */
+    public function files(): MorphToMany
+    {
+        return $this->morphToMany(File::class, 'fileable')->withPivot('flag');
+    }
+
+    /**
+     * Summary of amenities
+     * @return BelongsToMany<Amenity, Gym, \Illuminate\Database\Eloquent\Relations\Pivot>
+     */
+    public function amenities(): BelongsToMany
+    {
+        return $this->belongsToMany(Amenity::class, 'gym_amenities');
+    }
+
+    /**
+     * Summary of workoutTypes
+     * @return BelongsToMany<Gym, WorkoutType, \Illuminate\Database\Eloquent\Relations\Pivot>
+     */
+    public function workoutTypes(): BelongsToMany
+    {
+        return $this->belongsToMany(WorkoutType::class, 'gym_workout_types');
     }
 
     /*

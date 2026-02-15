@@ -43,6 +43,23 @@ class CreateGymRequest extends FormRequest
 
             // Public visibility - optional, defaults to false in model
             'is_public' => ['sometimes', 'boolean'],
+
+            // metadata
+            'metadata' => ['array'],
+            'metadata.*.key' => ['required', 'in:address,operating_hours,offers_personal_training'],
+            'metadata.*.value' => ['nullable'],
+
+            // files
+            'files' => ['array'],
+            'files.*' => ['uuid', 'exists:files,id'],
+
+            // amenities
+            'amenities' => ['array'],
+            'amenities.*' => ['uuid', 'exists:amenities,id'],
+
+            // workout types
+            'workout_types' => ['array'],
+            'workout_types.*' => ['uuid', 'exists:workout_types,id'],
         ];
     }
 

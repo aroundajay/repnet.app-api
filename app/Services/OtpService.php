@@ -305,10 +305,10 @@ class OtpService
      * @param string $code The code to verify
      * @return array{success: bool, otp: ?Otp, message: string}
      */
-    public function verify(string $identifier, string $type, string $code): array
+    public function verify(string $identifier, string $type, string $code, array $with = []): array
     {
         // Find the latest active OTP
-        $otp = $this->repository->findLatestActive($identifier, $type);
+        $otp = $this->repository->findLatestActive($identifier, $type, $with);
 
         if (!$otp) {
             return [

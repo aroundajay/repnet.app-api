@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Relations\MorphToMany; 
 
 /**
  * Message model for individual chat messages.
@@ -59,6 +60,14 @@ class Message extends Model
     public function sender(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
+    }
+
+    /**
+     * Get the files for this gym.
+     */
+    public function files(): MorphToMany
+    {
+        return $this->morphToMany(File::class, 'fileable')->withPivot('flag');
     }
 
     /*

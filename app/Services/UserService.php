@@ -97,9 +97,9 @@ class UserService
      * @param string $id User UUID
      * @return User|null
      */
-    public function findById(string $id): ?User
+    public function findById(string $id, array $with = []): ?User
     {
-        return $this->repository->findById($id);
+        return $this->repository->findById($id, $with);
     }
 
     /**
@@ -108,9 +108,9 @@ class UserService
      * @param string $email Email address
      * @return User|null
      */
-    public function findByEmail(string $email): ?User
+    public function findByEmail(string $email, array $with = []): ?User
     {
-        return $this->repository->findByEmail($email);
+        return $this->repository->findByEmail($email, $with);
     }
 
     /**
@@ -119,9 +119,9 @@ class UserService
      * @param string $mobile Mobile number
      * @return User|null
      */
-    public function findByMobile(string $mobile): ?User
+    public function findByMobile(string $mobile, array $with = []): ?User
     {
-        return $this->repository->findByMobile($mobile);
+        return $this->repository->findByMobile($mobile, $with);
     }
 
     /**
@@ -130,9 +130,9 @@ class UserService
      * @param string $identifier Email or mobile
      * @return User|null
      */
-    public function findByIdentifier(string $identifier): ?User
+    public function findByIdentifier(string $identifier, array $with = []): ?User
     {
-        return $this->repository->findByIdentifier($identifier);
+        return $this->repository->findByIdentifier($identifier, $with);
     }
 
     /*

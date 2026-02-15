@@ -109,6 +109,11 @@ class SendOtpRequest extends FormRequest
                 'min:2',
                 'max:255',
             ],
+            'data.password' => [
+                'required',
+                'string',
+                'min:6',
+            ],
             // Ensure identifier doesn't already exist in users table
             'identifier' => [
                 function ($attribute, $value, $fail) {

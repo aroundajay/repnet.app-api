@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
 
 /**
  * ChallengeSubmission model for user challenge entries.
@@ -70,6 +71,14 @@ class ChallengeSubmission extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Get the files for this gym.
+     */
+    public function files(): MorphToMany
+    {
+        return $this->morphToMany(File::class, 'fileable')->withPivot('flag');
     }
 
     /*

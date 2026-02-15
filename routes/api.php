@@ -7,16 +7,23 @@
  * and use the 'api' middleware group.
  */
 
-use Illuminate\Support\Facades\Route;
-use App\Actions\User\UpdateUserAction;
-use App\Actions\Otp\SendOtpAction;
-use App\Actions\Otp\VerifyOtpAction;
 use App\Actions\Auth\LoginAction;
+use App\Actions\File\UploadFileAction;
 use App\Actions\Gym\CreateGymAction;
 use App\Actions\Gym\InviteGymUserAction;
-use App\Actions\Gym\UpdateGymInviteStatusAction;
+use App\Actions\Gym\ListGymAction;
 use App\Actions\Gym\RequestGymJoinAction;
+use App\Actions\Gym\UpdateGymAction;
+use App\Actions\Gym\UpdateGymInviteStatusAction;
 use App\Actions\Gym\UpdateGymJoinAction;
+use App\Actions\Otp\SendOtpAction;
+use App\Actions\Otp\VerifyOtpAction;
+use App\Actions\User\UpdateUserAction;
+use App\Actions\Workout\ListWorkoutTypeAction;
+use App\Actions\Amenity\ListAmenityAction;
+use App\Services\GymService;
+
+use Illuminate\Support\Facades\Route;
 /*
 |--------------------------------------------------------------------------
 | Public Routes (No Authentication Required)
@@ -37,6 +44,48 @@ Route::prefix('otp')->group(function () {
 
     // Verify OTP code
     Route::post('/verify', VerifyOtpAction::class)->name('otp.verify');
+});
+
+/*
+|--------------------------------------------------------------------------
+| Gym Routes (Public - for listing public gyms)
+|--------------------------------------------------------------------------
+*/
+Route::prefix('gyms')->group(function () {
+    Route::get('', ListGymAction::class)->name('gyms.list');
+    Route::get('{gymId}', function () {
+        return [
+            'success' => true,
+            'status_code' => 200,
+            'message' => 'User fetched successfully',
+            'data' => [
+                'gym' => app()->make(GymService::class)->findGym(request()->gymId, ['files', 'amenities', 'workoutTypes']),
+            ],
+        ];
+    })->name('gyms.show');
+});
+
+/*
+|--------------------------------------------------------------------------
+| Workout Types Routes
+|--------------------------------------------------------------------------
+*/
+Route::prefix('workout-types')->group(function () {
+    Route::get('', ListWorkoutTypeAction::class)->name('workout-types.list');
+});
+
+/*
+|--------------------------------------------------------------------------
+| Permissions Routes (Public - for getting permissions)
+|--------------------------------------------------------------------------
+*/
+Route::get('app-permissions', function () {
+    return [
+        'success' => true,
+        'status_code' => 200,
+        'message' => 'Permissions fetched successfully',
+        'data' => config('apppermissions'),
+    ];
 });
 
 /*
@@ -63,7 +112,7 @@ Route::middleware('auth:sanctum')->group(function () {
                 'success' => true,
                 'status_code' => 200,
                 'message' => 'User fetched successfully',
-                'data' => request()->user(),
+                'data' => request()->user()->fresh(['gyms']),
             ];
         });
         Route::put('', UpdateUserAction::class)->name('user.update');
@@ -73,6 +122,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('gyms')->group(function () {
         // Gym routes - create gym (current user becomes owner)
         Route::post('', CreateGymAction::class)->name('gyms.create');
+
+        // Gym routes - update gym
+        Route::patch('{gymId}', UpdateGymAction::class)->name('gyms.update');
 
         // Gym routes - invite user to gym
         Route::post('{gymId}/invite', InviteGymUserAction::class)->name('gyms.invite');
@@ -87,5 +139,13 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('{gymId}/request-join/{userId}/status', UpdateGymJoinAction::class)->name('gyms.update.join.status');
     });
 
-    // Add your protected API routes here
+    // File routes
+    Route::prefix('files')->group(function () {
+        Route::post('', UploadFileAction::class)->name('files.upload');
+    });
+
+    // Amenities
+    Route::prefix('amenities')->group(function () {
+        Route::get('', ListAmenityAction::class)->name('amenities.list');
+    });
 });

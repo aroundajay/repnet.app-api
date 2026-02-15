@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -91,11 +92,14 @@ class User extends Authenticatable
     }
 
     /**
-     * Get all gym memberships for this user.
+     * Get all gyms this user belongs to, with their role from the pivot table.
+     * Returns Gym records with pivot data (role, status, membership_end).
      */
-    public function gymMemberships(): HasMany
+    public function gyms(): BelongsToMany
     {
-        return $this->hasMany(GymUser::class);
+        return $this->belongsToMany(Gym::class, 'gym_users')
+            ->withPivot('role', 'status', 'membership_end')
+            ->withTimestamps();
     }
 
     /**

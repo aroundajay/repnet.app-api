@@ -42,9 +42,10 @@ class GymUserRepository
      * @param string $userId User UUID
      * @return GymUser|null
      */
-    public function findByGymAndUser(string $gymId, string $userId): ?GymUser
+    public function findByGymAndUser(string $gymId, string $userId, array $with = []): ?GymUser
     {
-        return GymUser::where('gym_id', $gymId)
+        return GymUser::with($with)
+            ->where('gym_id', $gymId)
             ->where('user_id', $userId)
             ->first();
     }

@@ -4,7 +4,6 @@ namespace App\Repositories;
 
 use App\Models\Otp;
 use Illuminate\Support\Facades\Crypt;
-use Illuminate\Support\Facades\Log;
 
 /**
  * OTP Repository
@@ -51,9 +50,9 @@ class OtpRepository
      * @param string $id The OTP UUID
      * @return Otp|null
      */
-    public function findById(string $id): ?Otp
+    public function findById(string $id, array $with = []): ?Otp
     {
-        return Otp::find($id);
+        return Otp::with($with)->find($id);
     }
 
     /**
@@ -63,9 +62,10 @@ class OtpRepository
      * @param string $type The OTP type (login, update_password, etc.)
      * @return Otp|null
      */
-    public function findLatestActive(string $identifier, string $type): ?Otp
+    public function findLatestActive(string $identifier, string $type, array $with = []): ?Otp
     {
-        return Otp::where('identifier', $identifier)
+        return Otp::with($with)
+            ->where('identifier', $identifier)
             ->where('type', $type)
             ->where('expired_at', '>', now())
             ->whereNull('succeeded_at')
@@ -81,10 +81,10 @@ class OtpRepository
      * @param string $code The plain text OTP code to verify
      * @return Otp|null
      */
-    public function findForVerification(string $identifier, string $type, string $code): ?Otp
+    public function findForVerification(string $identifier, string $type, string $code, array $with = []): ?Otp
     {
         // Get the latest active OTP
-        $otp = $this->findLatestActive($identifier, $type);
+        $otp = $this->findLatestActive($identifier, $type, $with);
 
         if (!$otp) {
             return null;

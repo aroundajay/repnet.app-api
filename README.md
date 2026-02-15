@@ -1,6 +1,6 @@
 # repnet.app API
 
-Laravel 12 API backend for repnet.app. Uses Laravel Actions for single-purpose handlers, Sanctum for auth, and OTP (email/SMS) for login and verification flows.
+Laravel 12 API backend for repnet.app. Uses Laravel Actions for single-purpose handlers, Sanctum for auth, OTP (email/SMS) for login and verification, and gym management (create gyms, invite users, join requests).
 
 ## Requirements
 
@@ -78,11 +78,16 @@ All API routes are defined in `routes/api.php` and are prefixed with `/api` by L
 
 ### Protected (Sanctum)
 
-| Method | URI                           | Description                     | Auth |
-| ------ | ----------------------------- | ------------------------------- | ---- |
-| POST   | `/api/otp/send-authenticated` | Send OTP for authenticated user | Yes  |
-| GET    | `/api/user`                   | Get authenticated user          | Yes  |
-| PUT    | `/api/user`                   | Update authenticated user       | Yes  |
+| Method | URI                                              | Description                               | Auth |
+| ------ | ------------------------------------------------ | ----------------------------------------- | ---- |
+| POST   | `/api/otp/send-authenticated`                    | Send OTP for authenticated user           | Yes  |
+| GET    | `/api/user`                                      | Get authenticated user                    | Yes  |
+| PUT    | `/api/user`                                      | Update authenticated user                 | Yes  |
+| POST   | `/api/gyms`                                      | Create gym (caller becomes owner)         | Yes  |
+| POST   | `/api/gyms/{gymId}/invite`                       | Invite user to gym (owner/admin)          | Yes  |
+| PUT    | `/api/gyms/{gymId}/invite/{userId}/status`       | Accept/reject gym invite                  | Yes  |
+| POST   | `/api/gyms/{gymId}/request-join`                 | Request to join gym                       | Yes  |
+| PUT    | `/api/gyms/{gymId}/request-join/{userId}/status` | Approve/reject join request (owner/admin) | Yes  |
 
 ### Authentication
 
@@ -100,19 +105,28 @@ Authorization: Bearer {token}
 
 **Typical flow:** Use OTP (`/api/otp/send` then `/api/otp/verify`) or password (`/api/auth/login`) to obtain a user/token; then send `Authorization: Bearer {token}` on protected routes.
 
+## Gym
+
+Gyms have owners and admins who can invite users or approve join requests. Invitees use `PUT .../invite/{userId}/status` to accept or reject. Join requests use `POST .../request-join`; owners/admins use `PUT .../request-join/{userId}/status` to approve or reject. Roles and validation live in `GymService`, `GymUser` model, and the Gym actions.
+
 ## Actions
 
 Single-purpose action classes (Laravel Actions) used by the API:
 
-| Action             | Route(s) / usage                                         | Purpose                                               |
-| ------------------ | -------------------------------------------------------- | ----------------------------------------------------- |
-| `SendOtpAction`    | `POST /api/otp/send`, `POST /api/otp/send-authenticated` | Send OTP via email or SMS; rate-limited, cooldown.    |
-| `VerifyOtpAction`  | `POST /api/otp/verify`                                   | Verify OTP code; can create user or run callback.     |
-| `LoginAction`      | `POST /api/auth/login`                                   | Login with identifier (email/mobile) and password.    |
-| `UpdateUserAction` | `PUT /api/user`                                          | Update name, password (with current_password), email. |
-| `CreateUserAction` | Internal only                                            | Create user (e.g. used after OTP verification).       |
+| Action                        | Route(s) / usage                                         | Purpose                                               |
+| ----------------------------- | -------------------------------------------------------- | ----------------------------------------------------- |
+| `SendOtpAction`               | `POST /api/otp/send`, `POST /api/otp/send-authenticated` | Send OTP via email or SMS; rate-limited, cooldown.    |
+| `VerifyOtpAction`             | `POST /api/otp/verify`                                   | Verify OTP code; can create user or run callback.     |
+| `LoginAction`                 | `POST /api/auth/login`                                   | Login with identifier (email/mobile) and password.    |
+| `UpdateUserAction`            | `PUT /api/user`                                          | Update name, password (with current_password), email. |
+| `CreateUserAction`            | Internal only                                            | Create user (e.g. used after OTP verification).       |
+| `CreateGymAction`             | `POST /api/gyms`                                         | Create gym; authenticated user becomes owner.         |
+| `InviteGymUserAction`         | `POST /api/gyms/{gymId}/invite`                          | Invite user to gym (owner/admin); optional OTP.       |
+| `UpdateGymInviteStatusAction` | `PUT /api/gyms/{gymId}/invite/{userId}/status`           | Invitee accepts or rejects invite.                    |
+| `RequestGymJoinAction`        | `POST /api/gyms/{gymId}/request-join`                    | User requests to join gym.                            |
+| `UpdateGymJoinAction`         | `PUT /api/gyms/{gymId}/request-join/{userId}/status`     | Owner/admin approves or rejects join request.         |
 
-Actions live under `app/Actions/` (Auth, Otp, User). They use `OtpService`, `UserService`, and form requests in `app/Http/Requests/Otp/`.
+Actions live under `app/Actions/` (Auth, Gym, Otp, User). They use `OtpService`, `UserService`, `GymService`, and form requests in `app/Http/Requests/Otp/` and `app/Http/Requests/Gym/`.
 
 ## Packages
 
@@ -126,17 +140,19 @@ Actions live under `app/Actions/` (Auth, Otp, User). They use `OtpService`, `Use
 app/
 ├── Actions/              # Single-purpose action classes
 │   ├── Auth/             # LoginAction
+│   ├── Gym/              # CreateGymAction, InviteGymUserAction, UpdateGymInviteStatusAction, RequestGymJoinAction, UpdateGymJoinAction
 │   ├── Otp/              # SendOtpAction, VerifyOtpAction
 │   └── User/             # CreateUserAction, UpdateUserAction
 ├── Http/
 │   ├── Controllers/
 │   └── Requests/
+│       ├── Gym/          # CreateGymRequest
 │       └── Otp/          # SendOtpRequest, VerifyOtpRequest
-├── Jobs/                 # CleanupExpiredOtpsJob, etc.
-├── Models/               # User, Otp, Gym, WorkoutVideo, etc.
+├── Jobs/                 # CleanupExpiredOtpsJob
+├── Models/               # User, Otp, Gym, GymUser, WorkoutType, WorkoutVideo, File, NoticePost, Challenge, ChallengeSubmission, PartnerRequest, MessageThread, Message
 ├── Notifications/        # OtpNotification
-├── Repositories/         # OtpRepository, UserRepository
-├── Services/             # OtpService, UserService, SmsService
+├── Repositories/         # OtpRepository, UserRepository, GymRepository, GymUserRepository
+├── Services/             # OtpService, UserService, SmsService, GymService
 └── Providers/
 config/
 ├── otp.php               # OTP length, expiry, rate limits

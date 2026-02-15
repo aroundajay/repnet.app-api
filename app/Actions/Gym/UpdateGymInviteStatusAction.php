@@ -5,6 +5,7 @@ namespace App\Actions\Gym;
 use Lorisleiva\Actions\Concerns\AsAction;
 use Lorisleiva\Actions\ActionRequest;
 use App\Services\GymService;
+use Illuminate\Http\JsonResponse;
 
 class UpdateGymInviteStatusAction
 {
@@ -85,5 +86,13 @@ class UpdateGymInviteStatusAction
             'status' => $data['status'],
             'role' => $request->input('role'),
         ]);
+    }
+
+    /**
+     * Build JSON response from action result.
+     */
+    public function jsonResponse(array $data): JsonResponse
+    {
+        return response()->json($data, $data['status_code'] ?? 200);
     }
 }

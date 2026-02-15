@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
 
 /**
  * NoticePost model for gym announcements.
@@ -49,5 +50,13 @@ class NoticePost extends Model
     public function author(): BelongsTo
     {
         return $this->belongsTo(User::class, 'posted_by');
+    }
+
+    /**
+     * Get the files for this gym.
+     */
+    public function files(): MorphToMany
+    {
+        return $this->morphToMany(File::class, 'fileable')->withPivot('flag');
     }
 }

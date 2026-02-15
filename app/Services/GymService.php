@@ -6,6 +6,7 @@ use App\Models\Gym;
 use App\Models\GymUser;
 use App\Repositories\GymRepository;
 use App\Repositories\GymUserRepository;
+use Illuminate\Contracts\Pagination\CursorPaginator;
 use Illuminate\Support\Arr;
 
 /**
@@ -45,6 +46,26 @@ class GymService
 
         $gym = $this->gymRepository->create($gymData);
 
+        // sync metadata
+        if (!empty($data['metadata'])) {
+            $gym->updateMetadata($data['metadata']);
+        }
+
+        // sync files
+        if (!empty($data['files'])) {
+            $gym->files()->sync($data['files']);
+        }
+
+        // sync amenities
+        if (!empty($data['amenities'])) {
+            $gym->amenities()->sync($data['amenities']);
+        }
+
+        // sync workout types
+        if (!empty($data['workout_types'])) {
+            $gym->workoutTypes()->sync($data['workout_types']);
+        }
+
         // Add the owner as a gym member with role OWNER and status active
         $this->gymUserRepository->create([
             'gym_id' => $gym->id,
@@ -53,12 +74,76 @@ class GymService
             'status' => \App\Models\GymUser::STATUS_ACTIVE,
         ]);
 
-        return $gym;
+        return $gym->fresh(['files', 'amenities', 'workoutTypes']);
     }
 
-    public function findGymUserByGymIdAndUserId(string $gymId, string $userId): ?GymUser
+    /**
+     * Update a gym record.
+     * @param string $gymId
+     * @param array $data
+     * @return Gym
+     */
+    public function update(string $gymId, array $data): Gym
     {
-        return $this->gymUserRepository->findByGymAndUser($gymId, $userId);
+        $gym = $this->gymRepository->update($gymId, $data);
+
+        // sync metadata
+        if (!empty($data['metadata'])) {
+            $gym->updateMetadata($data['metadata']);
+        }
+
+        // sync files
+        if (!empty($data['files'])) {
+            $gym->files()->sync($data['files']);
+        }
+
+        // sync amenities
+        if (!empty($data['amenities'])) {
+            $gym->amenities()->sync($data['amenities']);
+        }
+
+        // sync workout types
+        if (!empty($data['workout_types'])) {
+            $gym->workoutTypes()->sync($data['workout_types']);
+        }
+
+        return $gym->fresh(['files', 'amenities', 'workoutTypes']);
+    }
+
+    /**
+     * List public gyms with cursor pagination.
+     * Optionally sorted by distance from given coordinates.
+     * Delegates to the repository for the actual query logic.
+     *
+     * @param array $data Optional: latitude, longitude, per_page, q (search by name)
+     * @return CursorPaginator Cursor-paginated gym results
+     */
+    public function list(array $data): CursorPaginator
+    {
+        $latitude = $data['latitude'] ?? null;
+        $longitude = $data['longitude'] ?? null;
+        $perPage = (int) ($data['per_page'] ?? 15);
+        $search = isset($data['q']) && $data['q'] !== '' ? (string) $data['q'] : null;
+        $with = $data['with'] ?? [];
+
+        // When coordinates are provided, fetch gyms sorted by distance
+        if ($latitude !== null && $longitude !== null) {
+            return $this->gymRepository->listSortedByDistance(
+                (float) $latitude,
+                (float) $longitude,
+                $perPage,
+                $search,
+                $with
+            );
+        }
+
+        // No coordinates; return all public gyms ordered by newest first
+        return $this->gymRepository->listPublic($perPage, $search, $with);
+    }
+
+    public function findGymUserByGymIdAndUserId(string $gymId, string $userId, array $with = []): ?GymUser
+    {
+        return $this->gymUserRepository->findByGymAndUser($gymId, $userId, $with);
     }
 
     public function createGymUser(string $gymId, string $userId, array $data): GymUser
@@ -74,8 +159,8 @@ class GymService
         return $this->gymUserRepository->updateGymUser($gymId, $userId, $data);
     }
 
-    public function findGym(string $gymId): ?Gym
+    public function findGym(string $gymId, array $with = []): ?Gym
     {
-        return $this->gymRepository->findById($gymId);
+        return $this->gymRepository->findById($gymId, $with);
     }
 }

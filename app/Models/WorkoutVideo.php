@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
 
 /**
  * WorkoutVideo model for gym workout content.
@@ -69,5 +70,13 @@ class WorkoutVideo extends Model
     public function messageThread(): MorphOne
     {
         return $this->morphOne(MessageThread::class, 'messageable');
+    }
+
+    /**
+     * Get the files for this gym.
+     */
+    public function files(): MorphToMany
+    {
+        return $this->morphToMany(File::class, 'fileable')->withPivot('flag');
     }
 }
