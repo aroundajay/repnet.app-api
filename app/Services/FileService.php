@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\File;
 use App\Repositories\FileRepository;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 class FileService
@@ -16,14 +17,22 @@ class FileService
 
         $path = 'upload/file/'.time().'_'.str_replace(' ', '-', $file->getClientOriginalName());
 
-        /**
-         * Using public disk instead s3
-         */
-        Storage::disk('s3')->put(
-            $path,
-            file_get_contents($file),
-            'public'
-        );
+        try {
+            /**
+             * Using s3 disk (MinIO)
+             */
+            Storage::disk('s3')->put(
+                $path,
+                file_get_contents($file),
+                'public'
+            );
+        } catch (\Exception $e) {
+            \Log::error('FileService: S3 upload failed', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            throw $e;
+        }
 
         return $this->fileRepository->create([
             'uploaded_by' => $data['uploaded_by'],

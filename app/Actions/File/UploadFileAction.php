@@ -3,6 +3,7 @@
 namespace App\Actions\File;
 
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Log;
 use Lorisleiva\Actions\ActionRequest;
 use Lorisleiva\Actions\Concerns\AsAction;
 
