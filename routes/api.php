@@ -112,7 +112,7 @@ Route::middleware('auth:sanctum')->group(function () {
                 'success' => true,
                 'status_code' => 200,
                 'message' => 'User fetched successfully',
-                'data' => request()->user()->fresh(['gyms']),
+                'data' => request()->user()->fresh(['gyms.files']),
             ];
         });
         Route::put('', UpdateUserAction::class)->name('user.update');
