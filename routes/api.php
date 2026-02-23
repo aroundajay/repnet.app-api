@@ -22,6 +22,9 @@ use App\Actions\Otp\VerifyOtpAction;
 use App\Actions\User\UpdateUserAction;
 use App\Actions\Workout\ListWorkoutTypeAction;
 use App\Actions\Amenity\ListAmenityAction;
+use App\Actions\Notification\ListNotificationAction;
+use App\Actions\Notification\MarkNotificationReadAction;
+use App\Actions\Notification\MarkAllNotificationsReadAction;
 use App\Services\GymService;
 
 use Illuminate\Support\Facades\Route;
@@ -151,5 +154,12 @@ Route::middleware('auth:sanctum')->group(function () {
     // Amenities
     Route::prefix('amenities')->group(function () {
         Route::get('', ListAmenityAction::class)->name('amenities.list');
+    });
+
+    // Notifications
+    Route::prefix('notifications')->group(function () {
+        Route::get('', ListNotificationAction::class)->name('notifications.list');
+        Route::patch('read-all', MarkAllNotificationsReadAction::class)->name('notifications.read-all');
+        Route::patch('{notificationId}/read', MarkNotificationReadAction::class)->name('notifications.read');
     });
 });
