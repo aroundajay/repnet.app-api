@@ -32,6 +32,10 @@ class UpdateGymInviteStatusAction
             return false;
         }
 
+        if (!user_can('update member join request', $gymUser->role)) {
+            return false;
+        }
+
         // add status to the request
         $request->merge(['role' => $gymUser->role]);
 

@@ -12,6 +12,7 @@ use App\Actions\File\UploadFileAction;
 use App\Actions\Gym\CreateGymAction;
 use App\Actions\Gym\InviteGymUserAction;
 use App\Actions\Gym\ListGymAction;
+use App\Actions\Gym\ListGymUsersAction;
 use App\Actions\Gym\RequestGymJoinAction;
 use App\Actions\Gym\UpdateGymAction;
 use App\Actions\Gym\UpdateGymInviteStatusAction;
@@ -137,6 +138,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
         // Gym routes - update gym join status
         Route::put('{gymId}/request-join/{userId}/status', UpdateGymJoinAction::class)->name('gyms.update.join.status');
+
+        // Gym routes - list gym members with optional search (q) and status filter
+        Route::get('{gymId}/users', ListGymUsersAction::class)->name('gyms.users.list');
     });
 
     // File routes

@@ -163,4 +163,28 @@ class GymService
     {
         return $this->gymRepository->findById($gymId, $with);
     }
+
+    /**
+     * List members of a gym with cursor pagination.
+     *
+     * Delegates query logic to GymUserRepository::listByGym().
+     * Each item in the paginator is a GymUser with the related User eager-loaded.
+     *
+     * @param string $gymId UUID of the target gym
+     * @param array  $data  Validated params: q?, status?, per_page?, cursor?
+     * @return CursorPaginator
+     */
+    public function listUsers(string $gymId, array $data): CursorPaginator
+    {
+        $perPage = (int) ($data['per_page'] ?? 50);
+        $search  = isset($data['q']) && $data['q'] !== '' ? (string) $data['q'] : null;
+        $status  = isset($data['status']) && $data['status'] !== '' ? (string) $data['status'] : null;
+
+        return $this->gymUserRepository->listByGym(
+            gymId: $gymId,
+            perPage: $perPage,
+            search: $search,
+            status: $status,
+        );
+    }
 }

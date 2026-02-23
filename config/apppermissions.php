@@ -50,8 +50,7 @@ $permissions = [
         // Membership moderation
         'invite users to gym',
         'update gym invite status',
-        'approve member join request',
-        'reject member join request',
+        'update member join request',
 
         // Content full control
         'update notice post',
@@ -59,6 +58,10 @@ $permissions = [
 
         'update workout video',
         'delete workout video',
+
+        // Membership control
+        'update membership duration',
+        'remove member from gym',
 
         // Challenge management
         'create challenge',
@@ -76,10 +79,6 @@ $permissions = [
         'update gym details',
         'delete gym',
         'view gym analytics',
-
-        // Membership control
-        'update membership duration',
-        'remove member from gym',
 
         // Challenge deletion
         'delete challenge',
