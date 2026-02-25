@@ -15,9 +15,12 @@ return new class extends Migration
             $table->uuid('id')->primary();
             $table->foreignUuid('user_id')->nullable()->constrained()->cascadeOnDelete();
 
+            $table->enum('channel', ['api', 'push'])->default('api');
+
             $table->string('type')->index();
             $table->string('title');
-            $table->text('body');
+            $table->longText('body');
+            $table->longText('icon_path')->nullable();
             $table->string('action_url')->nullable();
             $table->json('data')->nullable();
             $table->timestamp('read_at')->nullable();

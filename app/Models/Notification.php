@@ -14,10 +14,12 @@ class Notification extends Model
     use HasFactory, HasUuids, SoftDeletes;
 
     protected $fillable = [
+        'channel',
         'user_id',
         'type',
         'title',
         'body',
+        'icon_path',
         'action_url',
         'data',
         'read_at',

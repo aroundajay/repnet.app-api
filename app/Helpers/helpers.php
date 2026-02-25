@@ -11,3 +11,14 @@ if (!function_exists('user_can')) {
         return in_array($can, $permissions);
     }
 }
+
+if (!function_exists('get_notification_action_url')) {
+    function get_notification_action_url($type, $data) {
+        switch ($type) {
+            case 'gym_invite':
+                return '/gym/' . $data['gym_id'];
+            default:
+                return null;
+        }
+    }
+}

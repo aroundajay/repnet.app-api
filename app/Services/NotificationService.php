@@ -12,6 +12,11 @@ class NotificationService
         protected NotificationRepository $notificationRepository
     ) {}
 
+    public function create(array $data): Notification
+    {
+        return $this->notificationRepository->create($data);
+    }
+
     public function list(string $userId, array $data): CursorPaginator
     {
         $perPage = (int) ($data['per_page'] ?? 15);

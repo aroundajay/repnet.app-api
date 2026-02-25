@@ -6,12 +6,14 @@ use App\Repositories\AmenityRepository;
 use App\Repositories\FileRepository;
 use App\Repositories\GymRepository;
 use App\Repositories\GymUserRepository;
+use App\Repositories\NotificationRepository;
 use App\Repositories\OtpRepository;
 use App\Repositories\UserRepository;
 use App\Repositories\WorkoutTypeRepository;
 use App\Services\AmenityService;
 use App\Services\FileService;
 use App\Services\GymService;
+use App\Services\NotificationService;
 use App\Services\OtpService;
 use App\Services\SmsService;
 use App\Services\UserService;
@@ -77,6 +79,15 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(WorkoutTypeService::class, function ($app) {
             return new WorkoutTypeService(
                 $app->make(WorkoutTypeRepository::class)
+            );
+        });
+
+        /**
+         * Register Notification service
+         */
+        $this->app->singleton(NotificationService::class, function ($app) {
+            return new NotificationService(
+                $app->make(NotificationRepository::class)
             );
         });
     }

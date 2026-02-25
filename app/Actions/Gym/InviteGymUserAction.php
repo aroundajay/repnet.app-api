@@ -9,6 +9,8 @@ use Illuminate\Http\JsonResponse;
 use Lorisleiva\Actions\Concerns\AsAction;
 use Lorisleiva\Actions\ActionRequest;
 
+use App\Events\NotificationCreated;
+
 class InviteGymUserAction
 {
     use AsAction;
@@ -98,6 +100,24 @@ class InviteGymUserAction
         if (!$gymUser) {
             $gymUser = $this->gymService->createGymUser($gymId, $user->id, [
                 'role' => $role,
+            ]);
+
+            // dispatch the notification to the user
+            NotificationCreated::dispatch([
+                'channel' => 'push',
+                'user_id' => $user->id,
+                'type' => 'gym_invite',
+                'title' => $gymUser->gym->name,
+                'body' => 'You have been invited to join the gym',
+                'icon_path' => $gymUser->gym->logo,
+                'action_url' => get_notification_action_url('gym_invite', [
+                    'gym_id' => $gymId,
+                    'role' => $role,
+                ]),
+                'data' => [
+                    'gym_id' => $gymId,
+                    'role' => $role,
+                ],
             ]);
 
             return [

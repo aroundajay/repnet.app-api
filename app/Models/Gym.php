@@ -182,6 +182,15 @@ class Gym extends Model
     }
 
     /**
+     * Get the logo path
+     */
+    public function getLogoAttribute(): string
+    {
+        $logo = $this->files()->where('flag', 'logo')->first();
+        return $logo ? $logo->path : 'assets/icons/default-gym-logo.png';
+    }
+
+    /**
      * Get the location as an array.
      */
     public function getLocationAttribute(): array

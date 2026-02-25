@@ -6,6 +6,7 @@ use App\Repositories\AmenityRepository;
 use App\Repositories\FileRepository;
 use App\Repositories\GymRepository;
 use App\Repositories\GymUserRepository;
+use App\Repositories\NotificationRepository;
 use App\Repositories\OtpRepository;
 use App\Repositories\UserRepository;
 use App\Repositories\WorkoutTypeRepository;
@@ -65,6 +66,13 @@ class RepositoryServiceProvider extends ServiceProvider {
          */
         $this->app->singleton(WorkoutTypeRepository::class, function () {
             return new WorkoutTypeRepository();
+        });
+
+        /**
+         * Notification Repository
+         */
+        $this->app->singleton(NotificationRepository::class, function () {
+            return new NotificationRepository();
         });
     }
 

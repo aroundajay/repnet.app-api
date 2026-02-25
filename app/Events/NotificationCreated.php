@@ -2,12 +2,13 @@
 
 namespace App\Events;
 
-use App\Models\Notification;
+use App\Services\NotificationService;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Arr;
 
 class NotificationCreated implements ShouldBroadcast
 {
@@ -18,7 +19,7 @@ class NotificationCreated implements ShouldBroadcast
      *
      * @var string
      */
-    public $connection = 'redis';
+    public $connection = 'database';
 
     /**
      * The name of the queue on which to place the broadcasting job.
@@ -32,9 +33,9 @@ class NotificationCreated implements ShouldBroadcast
     /**
      * Create a new event instance.
      */
-    public function __construct(Notification $notification)
+    public function __construct($payload)
     {
-        $this->notification = $notification;
+        $this->notification = app(NotificationService::class)->create($payload);
     }
 
     /**
@@ -64,13 +65,13 @@ class NotificationCreated implements ShouldBroadcast
      */
     public function broadcastWith(): array
     {
-        return [
-            'id' => $this->notification->id,
-            'title' => $this->notification->title,
-            'message' => $this->notification->message,
-            'type' => $this->notification->type,
-            'read' => $this->notification->read,
-            'created_at' => $this->notification->created_at,
-        ];
-}
+        return Arr::only($this->notification->toArray(), [
+            'type',
+            'title',
+            'body',
+            'icon_path',
+            'action_url',
+            'data',
+        ]);
+    }
 }
