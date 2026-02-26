@@ -66,6 +66,7 @@ class NotificationCreated implements ShouldBroadcast
     public function broadcastWith(): array
     {
         return Arr::only($this->notification->toArray(), [
+            'id',
             'type',
             'title',
             'body',
