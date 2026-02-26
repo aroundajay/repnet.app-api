@@ -67,12 +67,16 @@ class NotificationCreated implements ShouldBroadcast
     {
         return Arr::only($this->notification->toArray(), [
             'id',
+            'channel',
+            'user_id',
             'type',
             'title',
             'body',
             'icon_path',
             'action_url',
             'data',
+            'read_at',
+            'sent_at',
         ]);
     }
 }

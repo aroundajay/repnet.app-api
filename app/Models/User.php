@@ -23,6 +23,15 @@ class User extends Authenticatable
     use HasFactory, Notifiable, HasApiTokens, HasUuids, SoftDeletes;
 
     /**
+     * The accessors to append to the model's array form.
+     *
+     * @var list<string>
+     */
+    protected $appends = [
+        'unread_notifications_count',
+    ];
+
+    /**
      * The attributes that are mass assignable.
      *
      * @var list<string>
@@ -132,5 +141,21 @@ class User extends Authenticatable
     public function messages(): HasMany
     {
         return $this->hasMany(Message::class);
+    }
+
+    /**
+     * Get all notifications for this user.
+     */
+    public function notifications(): HasMany
+    {
+        return $this->hasMany(Notification::class);
+    }
+
+    /**
+     * Get the count of unread notifications for this user.
+     */
+    public function getUnreadNotificationsCountAttribute(): int
+    {
+        return $this->notifications()->where('read_at', null)->count();
     }
 }
