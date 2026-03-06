@@ -107,7 +107,7 @@ class User extends Authenticatable
     public function gyms(): BelongsToMany
     {
         return $this->belongsToMany(Gym::class, 'gym_users')
-            ->withPivot('role', 'status', 'membership_end')
+            ->withPivot('role', 'status', 'membership_end', 'invited_by')
             ->withTimestamps();
     }
 

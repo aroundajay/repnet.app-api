@@ -2,6 +2,8 @@
 
 namespace App\Actions\Gym;
 
+use App\Actions\Message\CreateMessageAction;
+use App\Models\Gym;
 use Lorisleiva\Actions\Concerns\AsAction;
 use Lorisleiva\Actions\ActionRequest;
 use App\Services\GymService;
@@ -32,10 +34,6 @@ class UpdateGymInviteStatusAction
             return false;
         }
 
-        if (!user_can('update member join request', $gymUser->role)) {
-            return false;
-        }
-
         // add status to the request
         $request->merge(['role' => $gymUser->role]);
 
@@ -58,6 +56,7 @@ class UpdateGymInviteStatusAction
         $status = $data['status'] ?? \App\Models\GymUser::STATUS_ACTIVE;
         
         $gymUser = $this->gymService->findGymUserByGymIdAndUserId($gymId, $user_id);
+        
         if (!$gymUser) {
             $gymUser = $this->gymService->createGymUser($gymId, $user_id, [
                 'role' => $role,
@@ -68,6 +67,25 @@ class UpdateGymInviteStatusAction
                 'role' => $role,
                 'status' => $status,
             ]);
+        }
+
+        if ($status === \App\Models\GymUser::STATUS_ACTIVE) {
+            // send message to gym thread
+            $gym     = $this->gymService->findGym($gymId, ['messageThread']);
+            // Re-fetch after the upsert (updateGymUser returns bool, not a model)
+            $gymUser = $this->gymService->findGymUserByGymIdAndUserId($gymId, $user_id, ['user']);
+            $newUser = $gymUser->user;
+
+            CreateMessageAction::dispatch(
+                $gym->messageThread->id,
+                Gym::class,
+                $gym->id,
+                [
+                    'message'   => "🎉 Welcome {$newUser->name} to {$gym->name}! We're thrilled to have you here. Everyone, please join us in giving them a warm welcome! 👋",
+                    'card_type' => 'NEW_MEMBER',
+                    'files'     => [],
+                ],
+            );
         }
 
         return [

@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\MorphToMany; 
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 /**
  * Message model for individual chat messages.
@@ -26,9 +27,14 @@ class Message extends Model
      */
     protected $fillable = [
         'thread_id',
-        'user_id',
+        'sender_type',
+        'sender_id',
         'message',
+        'location_lat',
+        'location_lng',
+        'is_public',
         'read_by',
+        'card_type',
     ];
 
     /**
@@ -57,9 +63,9 @@ class Message extends Model
     /**
      * Get the user who sent this message.
      */
-    public function sender(): BelongsTo
+    public function sender(): MorphTo
     {
-        return $this->belongsTo(User::class, 'user_id');
+        return $this->morphTo();
     }
 
     /**
@@ -68,6 +74,14 @@ class Message extends Model
     public function files(): MorphToMany
     {
         return $this->morphToMany(File::class, 'fileable')->withPivot('flag');
+    }
+
+    /**
+     * Summary of reactions
+     * @return \Illuminate\Database\Eloquent\Relations\MorphMany<Reaction, Message>
+     */
+    public function reactions() {
+        return $this->morphMany(Reaction::class, 'reactable');
     }
 
     /*

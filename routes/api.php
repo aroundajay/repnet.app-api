@@ -25,6 +25,9 @@ use App\Actions\Amenity\ListAmenityAction;
 use App\Actions\Notification\ListNotificationAction;
 use App\Actions\Notification\MarkNotificationReadAction;
 use App\Actions\Notification\MarkAllNotificationsReadAction;
+use App\Actions\Feed\UserFeedAction;
+use App\Actions\Message\CreateMessageAction;
+use App\Actions\Message\ListMessageAction;
 use App\Services\GymService;
 
 use Illuminate\Support\Facades\Route;
@@ -116,7 +119,7 @@ Route::middleware('auth:sanctum')->group(function () {
                 'success' => true,
                 'status_code' => 200,
                 'message' => 'User fetched successfully',
-                'data' => request()->user()->fresh(['gyms.files']),
+                'data' => request()->user()->fresh(['gyms.files', 'gyms.messageThread']),
             ];
         });
         Route::put('', UpdateUserAction::class)->name('user.update');
@@ -161,5 +164,19 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('', ListNotificationAction::class)->name('notifications.list');
         Route::patch('read-all', MarkAllNotificationsReadAction::class)->name('notifications.read-all');
         Route::patch('{notificationId}/read', MarkNotificationReadAction::class)->name('notifications.read');
+    });
+
+    // messages
+    Route::prefix('messages')->group(function () {
+        // Send a new message to a thread (with optional file attachments)
+        Route::post('threads/{threadId}/messages', CreateMessageAction::class)->name('messages.create');
+
+        // List messages in a thread with cursor pagination (newest first)
+        Route::get('threads/{threadId}/messages', ListMessageAction::class)->name('messages.list');
+    });
+
+    // user feed
+    Route::prefix('feed')->group(function () {
+        Route::get('', UserFeedAction::class)->name('feed.list');
     });
 });

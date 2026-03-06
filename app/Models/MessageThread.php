@@ -27,6 +27,11 @@ class MessageThread extends Model
     protected $fillable = [
         'messageable_type',
         'messageable_id',
+        'disabled_at'
+    ];
+
+    protected $casts = [
+        'disabled_at' => 'datetime',
     ];
 
     /*

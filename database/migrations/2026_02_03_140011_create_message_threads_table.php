@@ -26,6 +26,9 @@ return new class extends Migration
             // Polymorphic relationship to messageable entities
             // Can be: gyms, partner_requests, workout_videos
             $table->uuidMorphs('messageable');
+
+            // disabled_at
+            $table->timestamp('disabled_at')->nullable();
             
             // Standard Laravel timestamps and soft deletes
             $table->timestamps();

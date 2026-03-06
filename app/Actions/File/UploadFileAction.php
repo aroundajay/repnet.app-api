@@ -31,7 +31,7 @@ class UploadFileAction
     public function rules(): array
     {
         return [
-            'file' => 'required|file|mimes:png,jpg,jpeg,gif,mp4,avi,mov|max:10240',
+            'file' => 'required|file|mimes:png,jpg,jpeg,gif,mp4,avi,mov|max:1024000',
         ];
     }
 

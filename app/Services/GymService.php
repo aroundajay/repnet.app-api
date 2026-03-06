@@ -74,6 +74,11 @@ class GymService
             'status' => \App\Models\GymUser::STATUS_ACTIVE,
         ]);
 
+        // create message thread
+        $gym->messageThread()->create([
+            'disabled_at' => null,
+        ]);
+
         return $gym->fresh(['files', 'amenities', 'workoutTypes']);
     }
 
@@ -111,29 +116,49 @@ class GymService
     }
 
     /**
+     * Maximum radius the caller is allowed to request in kilometres.
+     * Prevents malicious large-radius requests from defeating the bounding-box
+     * optimisation and scanning the whole table.
+     */
+    private const MAX_RADIUS_KM = 500.0;
+
+    /**
+     * Default search radius when the caller omits radius_km.
+     */
+    private const DEFAULT_RADIUS_KM = 50.0;
+
+    /**
      * List public gyms with cursor pagination.
      * Optionally sorted by distance from given coordinates.
+     * When coordinates are present a bounding-box pre-filter is applied so that
+     * only gyms within radius_km are scanned, not the entire public table.
      * Delegates to the repository for the actual query logic.
      *
-     * @param array $data Optional: latitude, longitude, per_page, q (search by name)
+     * @param array $data Optional: latitude, longitude, radius_km, per_page, q
      * @return CursorPaginator Cursor-paginated gym results
      */
     public function list(array $data): CursorPaginator
     {
-        $latitude = $data['latitude'] ?? null;
+        $latitude  = $data['latitude']  ?? null;
         $longitude = $data['longitude'] ?? null;
-        $perPage = (int) ($data['per_page'] ?? 15);
-        $search = isset($data['q']) && $data['q'] !== '' ? (string) $data['q'] : null;
-        $with = $data['with'] ?? [];
+        $perPage   = (int) ($data['per_page'] ?? 15);
+        $search    = isset($data['q']) && $data['q'] !== '' ? (string) $data['q'] : null;
+        $with      = $data['with'] ?? [];
 
         // When coordinates are provided, fetch gyms sorted by distance
         if ($latitude !== null && $longitude !== null) {
+            // Clamp radius to the allowed maximum so callers cannot bypass the
+            // bounding-box optimisation by requesting an enormous radius.
+            $radiusKm = (float) ($data['radius_km'] ?? self::DEFAULT_RADIUS_KM);
+            $radiusKm = min($radiusKm, self::MAX_RADIUS_KM);
+
             return $this->gymRepository->listSortedByDistance(
-                (float) $latitude,
-                (float) $longitude,
-                $perPage,
-                $search,
-                $with
+                latitude:  (float) $latitude,
+                longitude: (float) $longitude,
+                radiusKm:  $radiusKm,
+                perPage:   $perPage,
+                search:    $search,
+                with:      $with,
             );
         }
 
