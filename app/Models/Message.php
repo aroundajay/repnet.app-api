@@ -68,6 +68,11 @@ class Message extends Model
         return $this->morphTo();
     }
 
+    public function gym()
+    {
+        return $this->hasOneThrough(Gym::class, MessageThread::class, 'id', 'id', 'thread_id', 'messageable_id');
+    }
+
     /**
      * Get the files for this gym.
      */

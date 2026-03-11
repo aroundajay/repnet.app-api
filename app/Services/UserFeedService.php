@@ -55,7 +55,7 @@ class UserFeedService
             latitude: $latitude,
             longitude: $longitude,
             radiusKm: $radiusKm,
-            with: ['files', 'sender', 'reactions'],
+            with: ['files', 'sender', 'reactions', 'gym'],
         );
     }
 }
