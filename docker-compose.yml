@@ -9,6 +9,8 @@ services:
       timeout: 3s
       retries: 5
     command: ["redis-server"]
+    ports:
+      - "6379:6379"
     networks:
       - bridge
 

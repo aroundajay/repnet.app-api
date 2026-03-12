@@ -10,15 +10,16 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\MorphToMany; 
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 
+use App\Traits\HasReactions;
+
 /**
  * Message model for individual chat messages.
  * 
  * Belongs to a MessageThread for conversation grouping.
- * Uses bloom filter compatible read_by field for efficient read tracking.
  */
 class Message extends Model
 {
-    use HasFactory, HasUuids, SoftDeletes;
+    use HasFactory, HasUuids, SoftDeletes, HasReactions;
 
     /**
      * The attributes that are mass assignable.
@@ -33,7 +34,6 @@ class Message extends Model
         'location_lat',
         'location_lng',
         'is_public',
-        'read_by',
         'card_type',
     ];
 
@@ -42,9 +42,7 @@ class Message extends Model
      *
      * @var list<string>
      */
-    protected $hidden = [
-        'read_by', // Bloom filter data not useful in API responses
-    ];
+    protected $hidden = [];
 
     /*
     |--------------------------------------------------------------------------
@@ -79,44 +77,5 @@ class Message extends Model
     public function files(): MorphToMany
     {
         return $this->morphToMany(File::class, 'fileable')->withPivot('flag');
-    }
-
-    /**
-     * Summary of reactions
-     * @return \Illuminate\Database\Eloquent\Relations\MorphMany<Reaction, Message>
-     */
-    public function reactions() {
-        return $this->morphMany(Reaction::class, 'reactable');
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Bloom Filter Methods
-    |--------------------------------------------------------------------------
-    */
-
-    /**
-     * Get the read_by bloom filter as raw bytes.
-     */
-    public function getReadByFilter(): ?string
-    {
-        return $this->read_by;
-    }
-
-    /**
-     * Set the read_by bloom filter from raw bytes.
-     */
-    public function setReadByFilter(string $filter): void
-    {
-        $this->read_by = $filter;
-    }
-
-    /**
-     * Initialize an empty bloom filter for read tracking.
-     * Default size: 128 bytes (1024 bits) for ~100 users with 1% false positive rate.
-     */
-    public function initializeReadByFilter(int $sizeInBytes = 128): void
-    {
-        $this->read_by = str_repeat("\0", $sizeInBytes);
     }
 }

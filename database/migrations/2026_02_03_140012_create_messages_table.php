@@ -10,7 +10,6 @@ use Illuminate\Support\Facades\Schema;
  * Individual messages within conversation threads with:
  * - Thread association for grouping
  * - Sender tracking via user_id
- * - Bloom filter compatible read_by field for efficient read tracking
  * - Soft deletes for message deletion
  */
 return new class extends Migration
@@ -40,16 +39,6 @@ return new class extends Migration
 
             // Visibility setting (public gyms can be discovered by anyone)
             $table->boolean('is_public')->default(false);
-
-            // Bloom filter friendly field for tracking who has read the message
-            // Using binary blob to store bloom filter bit array
-            // This allows O(1) membership checks without storing individual user IDs
-            $table->binary('read_by')->nullable();
-
-            // Bloom filter friendly field for tracking who has reacted to the message
-            // Using binary blob to store bloom filter bit array
-            // This allows O(1) membership checks without storing individual user IDs
-            $table->binary('reacted_by')->nullable();
 
             // Card type
             $table->enum('card_type', [
