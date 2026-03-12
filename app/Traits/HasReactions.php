@@ -6,7 +6,6 @@ use App\Models\Reaction;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Facades\Redis;
-
 /**
  * Trait HasReactions
  * 
