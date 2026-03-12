@@ -76,4 +76,18 @@ class MessageService
     {
         return $this->messageRepository;
     }
+
+    /**
+     * List users who reacted to a message with cursor pagination.
+     *
+     * @param  string          $messageId Message UUID
+     * @param  array           $data      Optional: reaction, per_page, cursor
+     * @return CursorPaginator
+     */
+    public function listReactedUsers(string $messageId, array $data): CursorPaginator
+    {
+        $perPage = (int) ($data['per_page'] ?? 20);
+
+        return $this->messageRepository->listReactedUsers($messageId, $perPage, $data['reaction'] ?? null);
+    }
 }

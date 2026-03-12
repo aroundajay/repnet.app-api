@@ -28,7 +28,7 @@ trait HandlesReactions
 
         return [
             'added' => $added,
-            'model' => $model->fresh()->toArray(),
+            'model' => $model->fresh(['files', 'sender', 'gym'])->toArray(),
         ];
     }
 

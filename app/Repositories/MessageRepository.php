@@ -66,4 +66,31 @@ class MessageRepository
             ->orderBy('id', 'desc') // deterministic tie-breaker for cursor pagination
             ->cursorPaginate($perPage);
     }
+
+    /**
+     * List users who reacted to a message with cursor pagination.
+     *
+     * @param string      $messageId Message UUID
+     * @param int         $perPage   Items per page
+     * @param string|null $reaction  Optional reaction type filter
+     * @return CursorPaginator
+     */
+    public function listReactedUsers(string $messageId, int $perPage = 20, ?string $reaction = null): CursorPaginator
+    {
+        // Find the message
+        $message = $this->findById($messageId);
+
+        // Get the reactions relation query
+        $query = $message->reactions()->with('user');
+
+        if ($reaction) {
+            $query->where('reaction', $reaction);
+        }
+
+        // Paginate over reactions to get cursor pagination, then map to users.
+        return $query->orderBy('created_at', 'desc')
+                     ->orderBy('id', 'desc')
+                     ->cursorPaginate($perPage)
+                     ->through(fn ($reactionModel) => $reactionModel->user);
+    }
 }
