@@ -28,6 +28,7 @@ use App\Actions\Notification\MarkAllNotificationsReadAction;
 use App\Actions\Feed\UserFeedAction;
 use App\Actions\Message\CreateMessageAction;
 use App\Actions\Message\ListMessageAction;
+use App\Actions\Message\GetMessageAction;
 use App\Actions\Message\ToggleMessageReactionAction;
 use App\Actions\Message\ListMessageReactedUsersAction;
 use App\Services\GymService;
@@ -175,6 +176,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
         // List messages in a thread with cursor pagination (newest first)
         Route::get('threads/{threadId}/messages', ListMessageAction::class)->name('messages.list');
+
+        // Get a message by ID
+        Route::get('threads/{threadId}/messages/{messageId}', GetMessageAction::class)->name('messages.show');
 
         // Toggle a reaction for a message
         Route::patch('threads/{threadId}/messages/{messageId}/react', ToggleMessageReactionAction::class)->name('messages.toggle-reaction');

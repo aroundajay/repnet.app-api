@@ -56,6 +56,18 @@ class MessageService
     }
 
     /**
+     * Find a single message by its ID.
+     *
+     * @param  string       $id   Message UUID
+     * @param  array        $with Eager-load relations
+     * @return Message|null
+     */
+    public function findById(string $id, array $with = []): ?Message
+    {
+        return $this->messageRepository->findById($id, $with);
+    }
+
+    /**
      * List messages in a thread with cursor pagination.
      *
      * @param  string          $threadId Thread UUID

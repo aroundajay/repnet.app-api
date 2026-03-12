@@ -7,6 +7,8 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Lorisleiva\Actions\Concerns\AsAction;
+use App\Events\NotificationCreated;
+use App\Services\UserService;
 
 /**
  * Toggle Message Reaction Action
@@ -19,7 +21,8 @@ class ToggleMessageReactionAction
     use AsAction;
 
     public function __construct(
-        protected MessageService $messageService
+        protected MessageService $messageService,
+        protected UserService $userService
     ) {}
 
     /**
@@ -73,6 +76,29 @@ class ToggleMessageReactionAction
     public function handle(string $messageId, string $userId, string $reactionType): array
     {
         $result = $this->messageService->toggleReaction($messageId, $userId, $reactionType);
+
+        if ($result['added']) {
+            $messageSender = $result['model']->sender;
+            $reactionSender = $this->userService->findById($userId);
+            // dispatch the notification to the user
+            NotificationCreated::dispatchIf(
+                $messageSender->id !== $userId,
+                [
+                    'channel' => 'push',
+                    'user_id' => $messageSender->id,
+                    'type' => 'message_reaction',
+                    'title' => $reactionSender->name,
+                    'body' => $reactionSender->name . ' reacted ' . get_reaction_emoji($reactionType) . ' to your message.',
+                    'icon_path' => $reactionSender->profile_picture,
+                    'action_url' => get_notification_action_url('message_reaction', [
+                        'message' => $result['model'],
+                    ]),
+                    'data' => [
+                        'message' => $result['model'],
+                    ],
+                ]
+            );
+        }
 
         return [
             'success'     => true,
