@@ -45,6 +45,7 @@ return new class extends Migration
                 'POST',
                 'NEW_MEMBER',
                 'DM',
+                'COMMENT',
             ])->default('POST');
 
             // Standard Laravel timestamps and soft deletes

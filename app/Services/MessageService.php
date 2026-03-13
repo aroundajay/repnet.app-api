@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Message;
 use App\Repositories\MessageRepository;
+use App\Traits\HandlesMessageThread;
 use App\Traits\HandlesReactions;
 use Illuminate\Contracts\Pagination\CursorPaginator;
 
@@ -16,7 +17,7 @@ use Illuminate\Contracts\Pagination\CursorPaginator;
  */
 class MessageService
 {
-    use HandlesReactions;
+    use HandlesReactions, HandlesMessageThread;
 
     public function __construct(
         protected MessageRepository $messageRepository
@@ -52,7 +53,10 @@ class MessageService
             $message->files()->sync($data['files']);
         }
 
-        return $message->fresh(['files', 'sender']);
+        // Increment the cached message count for this thread
+        $this->incrementMessageCount($threadId);
+
+        return $message->fresh(['files', 'sender', 'gym', 'messageThread']);
     }
 
     /**
@@ -78,13 +82,21 @@ class MessageService
     {
         $perPage = (int) ($data['per_page'] ?? 20);
 
-        return $this->messageRepository->listByThread($threadId, $perPage, ['files', 'sender']);
+        return $this->messageRepository->listByThread($threadId, $perPage, ['files', 'sender', 'gym', 'messageThread']);
     }
 
     /**
      * Get the repository corresponding to the model for reaction operations.
      */
     protected function getReactionRepository(): MessageRepository
+    {
+        return $this->messageRepository;
+    }
+
+    /**
+     * Get the repository for message thread operations.
+     */
+    protected function getMessageRepository(): MessageRepository
     {
         return $this->messageRepository;
     }

@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Traits\HasMessageThread;
+use App\Traits\HasReactions;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -10,8 +12,6 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\MorphToMany; 
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 
-use App\Traits\HasReactions;
-
 /**
  * Message model for individual chat messages.
  * 
@@ -19,7 +19,7 @@ use App\Traits\HasReactions;
  */
 class Message extends Model
 {
-    use HasFactory, HasUuids, SoftDeletes, HasReactions;
+    use HasFactory, HasUuids, SoftDeletes, HasReactions, HasMessageThread;
 
     /**
      * The attributes that are mass assignable.

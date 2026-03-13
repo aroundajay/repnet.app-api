@@ -2,11 +2,11 @@
 
 namespace App\Models;
 
+use App\Traits\HasMessageThread;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
@@ -17,7 +17,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  */
 class PartnerRequest extends Model
 {
-    use HasFactory, HasUuids, SoftDeletes;
+    use HasFactory, HasUuids, SoftDeletes, HasMessageThread;
 
     /**
      * Status constants.
@@ -84,14 +84,6 @@ class PartnerRequest extends Model
     public function workoutType(): BelongsTo
     {
         return $this->belongsTo(WorkoutType::class);
-    }
-
-    /**
-     * Get the message thread for partner communication.
-     */
-    public function messageThread(): MorphOne
-    {
-        return $this->morphOne(MessageThread::class, 'messageable');
     }
 
     /*

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Traits\HasMetadata;
+use App\Traits\HasMessageThread;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -21,7 +22,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
  */
 class Gym extends Model
 {
-    use HasFactory, HasUuids, SoftDeletes, HasMetadata;
+    use HasFactory, HasUuids, SoftDeletes, HasMetadata, HasMessageThread;
 
     /**
      * The attributes that are mass assignable.
@@ -131,14 +132,6 @@ class Gym extends Model
     public function partnerRequests(): HasMany
     {
         return $this->hasMany(PartnerRequest::class);
-    }
-
-    /**
-     * Get the message thread for this gym (group chat).
-     */
-    public function messageThread(): MorphOne
-    {
-        return $this->morphOne(MessageThread::class, 'messageable');
     }
 
     /**

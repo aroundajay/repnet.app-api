@@ -3,6 +3,7 @@
 namespace App\Repositories;
 
 use App\Models\Message;
+use App\Traits\ManagesMessageThread;
 use App\Traits\ManagesReactions;
 use Illuminate\Contracts\Pagination\CursorPaginator;
 
@@ -14,7 +15,7 @@ use Illuminate\Contracts\Pagination\CursorPaginator;
  */
 class MessageRepository
 {
-    use ManagesReactions;
+    use ManagesReactions, ManagesMessageThread;
     /*
     |--------------------------------------------------------------------------
     | Create Operations

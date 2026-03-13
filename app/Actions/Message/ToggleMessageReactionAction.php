@@ -80,6 +80,7 @@ class ToggleMessageReactionAction
         if ($result['added']) {
             $messageSender = $result['model']->sender;
             $reactionSender = $this->userService->findById($userId);
+
             // dispatch the notification to the user
             NotificationCreated::dispatchIf(
                 $messageSender->id !== $userId,
@@ -88,7 +89,7 @@ class ToggleMessageReactionAction
                     'user_id' => $messageSender->id,
                     'type' => 'message_reaction',
                     'title' => $reactionSender->name,
-                    'body' => $reactionSender->name . ' reacted ' . get_reaction_emoji($reactionType) . ' to your message.',
+                    'body' => get_body_by_card_type_and_reaction_type($result['model']->card_type, $reactionSender->name, $reactionType),
                     'icon_path' => $reactionSender->profile_picture,
                     'action_url' => get_notification_action_url('message_reaction', [
                         'message' => $result['model'],

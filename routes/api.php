@@ -26,6 +26,7 @@ use App\Actions\Notification\ListNotificationAction;
 use App\Actions\Notification\MarkNotificationReadAction;
 use App\Actions\Notification\MarkAllNotificationsReadAction;
 use App\Actions\Feed\UserFeedAction;
+use App\Actions\Message\CreateCommentMessageAction;
 use App\Actions\Message\CreateMessageAction;
 use App\Actions\Message\ListMessageAction;
 use App\Actions\Message\GetMessageAction;
@@ -173,6 +174,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('messages')->group(function () {
         // Send a new message to a thread (with optional file attachments)
         Route::post('threads/{threadId}/messages', CreateMessageAction::class)->name('messages.create');
+
+        // Send a comment message to a message
+        Route::post('{messageId}/comments', CreateCommentMessageAction::class)->name('comments.create');
 
         // List messages in a thread with cursor pagination (newest first)
         Route::get('threads/{threadId}/messages', ListMessageAction::class)->name('messages.list');
