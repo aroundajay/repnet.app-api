@@ -48,6 +48,19 @@ trait HandlesMessageThread
     }
 
     /**
+     * Clear the message count cache for a thread.
+     * Called when a thread is deleted so the stale Redis key is removed.
+     *
+     * @param string $threadId UUID of the deleted message thread
+     * @return void
+     */
+    public function clearMessageCountCache(string $threadId): void
+    {
+        $repository = $this->getMessageRepository();
+        $repository->clearMessageCountCache($threadId);
+    }
+
+    /**
      * Get the repository for message thread operations.
      * Classes using this trait must implement this method and return the repository instance.
      *

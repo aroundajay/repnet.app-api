@@ -3,7 +3,9 @@
 namespace App\Services;
 
 use App\Models\Message;
+use App\Models\MessageThread;
 use App\Repositories\MessageRepository;
+use App\Repositories\MessageThreadRepository;
 use App\Traits\HandlesMessageThread;
 use App\Traits\HandlesReactions;
 use Illuminate\Contracts\Pagination\CursorPaginator;
@@ -20,7 +22,8 @@ class MessageService
     use HandlesReactions, HandlesMessageThread;
 
     public function __construct(
-        protected MessageRepository $messageRepository
+        protected MessageRepository $messageRepository,
+        protected MessageThreadRepository $messageThreadRepository
     ) {}
 
     /**
@@ -83,6 +86,61 @@ class MessageService
         $perPage = (int) ($data['per_page'] ?? 20);
 
         return $this->messageRepository->listByThread($threadId, $perPage, ['files', 'sender', 'gym', 'messageThread']);
+    }
+
+    /**
+     * Delete a message and all of its nested threads and child messages recursively.
+     *
+     * Depth-first: child messages are fully removed before their parent thread
+     * and the root message itself are removed.
+     * After recursion, the parent thread's Redis count is decremented.
+     *
+     * @param  string $messageId UUID of the message to delete
+     * @return void
+     */
+    public function delete(string $messageId): void
+    {
+        $message = $this->messageRepository->findById($messageId, ['messageThread.messages']);
+
+        // Hold the parent thread ID so we can decrement its count after deletion
+        $parentThreadId = $message->thread_id;
+
+        $this->deleteRecursively($message);
+
+        // The message is now gone — decrement its parent thread's cached count
+        $this->decrementMessageCount($parentThreadId);
+    }
+
+    /**
+     * Recursively soft-delete a message and everything nested beneath it.
+     *
+     * For each message:
+     *   1. Recurse into all child messages inside its own messageThread (if any)
+     *   2. Soft-delete that thread and clear its Redis key
+     *   3. Soft-delete the message itself
+     *
+     * @param  Message $message The message to delete
+     * @return void
+     */
+    private function deleteRecursively(Message $message): void
+    {
+        /** @var MessageThread|null $thread The thread this message owns (as messageable) */
+        $thread = $message->messageThread;
+
+        if ($thread) {
+            // Recurse into every child message before removing the thread
+            foreach ($thread->messages as $childMessage) {
+                $this->deleteRecursively($childMessage);
+            }
+
+            // Remove the thread from the database
+            $this->messageThreadRepository->delete($thread);
+
+            // Remove the stale Redis count for this now-deleted thread
+            $this->clearMessageCountCache($thread->id);
+        }
+
+        $this->messageRepository->delete($message);
     }
 
     /**

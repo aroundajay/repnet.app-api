@@ -66,4 +66,16 @@ trait ManagesMessageThread
             Redis::set($key, 0);
         }
     }
+
+    /**
+     * Remove the message count cache for a thread entirely.
+     * Called when a thread itself is deleted so the stale key is cleaned up.
+     *
+     * @param string $threadId UUID of the deleted message thread
+     * @return void
+     */
+    public function clearMessageCountCache(string $threadId): void
+    {
+        Redis::del("message_threads:{$threadId}:message_count");
+    }
 }

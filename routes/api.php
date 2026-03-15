@@ -31,6 +31,7 @@ use App\Actions\Message\CreateMessageAction;
 use App\Actions\Message\ListMessageAction;
 use App\Actions\Message\GetMessageAction;
 use App\Actions\Message\ToggleMessageReactionAction;
+use App\Actions\Message\DeleteMessageAction;
 use App\Actions\Message\ListMessageReactedUsersAction;
 use App\Services\GymService;
 
@@ -188,6 +189,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::patch('threads/{threadId}/messages/{messageId}/react', ToggleMessageReactionAction::class)->name('messages.toggle-reaction');
 
         Route::get('threads/{threadId}/messages/{messageId}/reacted-users', ListMessageReactedUsersAction::class)->name('messages.reacted-users.list');
+
+        // Delete a message and all of its nested thread + child messages recursively
+        Route::delete('threads/{threadId}/messages/{messageId}', DeleteMessageAction::class)->name('messages.delete');
     });
 
     // user feed

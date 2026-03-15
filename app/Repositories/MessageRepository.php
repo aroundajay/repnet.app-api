@@ -35,6 +35,23 @@ class MessageRepository
 
     /*
     |--------------------------------------------------------------------------
+    | Delete Operations
+    |--------------------------------------------------------------------------
+    */
+
+    /**
+     * Soft-delete a message record.
+     *
+     * @param  Message $message The message to delete
+     * @return void
+     */
+    public function delete(Message $message): void
+    {
+        $message->delete();
+    }
+
+    /*
+    |--------------------------------------------------------------------------
     | Read Operations
     |--------------------------------------------------------------------------
     */

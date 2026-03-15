@@ -86,6 +86,23 @@ class MessageThreadRepository
 
     /*
     |--------------------------------------------------------------------------
+    | Delete Operations
+    |--------------------------------------------------------------------------
+    */
+
+    /**
+     * Soft-delete a message thread record.
+     *
+     * @param  MessageThread $thread The thread to delete
+     * @return void
+     */
+    public function delete(MessageThread $thread): void
+    {
+        $thread->delete();
+    }
+
+    /*
+    |--------------------------------------------------------------------------
     | Update Operations
     |--------------------------------------------------------------------------
     */
