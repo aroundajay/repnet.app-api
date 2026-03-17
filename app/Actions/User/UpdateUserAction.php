@@ -23,6 +23,11 @@ class UpdateUserAction
             'name' => 'sometimes|string|max:255',
             'password' => 'sometimes|string|min:6|confirmed',
             'current_password' => 'string|required_with:password',
+
+            // Optional file attachments - array of existing file UUIDs
+            'files'   => ['sometimes', 'array'],
+            'files.*.id' => ['required', 'uuid', 'exists:files,id'],
+            'files.*.flag' => ['required', 'in:PROFILE,COVER'],
         ];
     }
 
@@ -76,7 +81,7 @@ class UpdateUserAction
             'success' => true,
             'message' => 'User updated successfully',
             'status_code' => 200,
-            'data' => $user->fresh(),
+            'data' => $user->fresh(['files']),
         ];
     }
 

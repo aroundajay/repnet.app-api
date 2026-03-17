@@ -25,14 +25,11 @@ services:
       - "minio_data:/data"
     environment:
       - MINIO_ROOT_USER=miniouser
-      - MINIO_ROOT_PASSWORD=miniopasword
+      - MINIO_ROOT_PASSWORD=miniopassword
       # Default bucket with public policy (format: bucket:policy)
       - MINIO_DEFAULT_BUCKETS=repnet:public
       # Default region for S3 compatibility
       - MINIO_REGION_NAME=ap-south-1
-      # Access key credentials for S3 API access
-      - MINIO_ACCESS_KEY=BtjC9hEG2wuAVagSHV8e
-      - MINIO_SECRET_KEY=Dt58m65iuRGkzmWSOn6NLQoRDKUnJ527w96CZNx8
 
   mailpit:
     image: axllent/mailpit

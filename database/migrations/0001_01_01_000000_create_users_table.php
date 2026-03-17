@@ -38,7 +38,7 @@ return new class extends Migration
 
             // User profile information
             $table->string('name');
-            $table->string('avatar')->nullable();
+            $table->text('bio')->nullable();
 
             // Standard Laravel timestamps and soft deletes
             $table->timestamps();

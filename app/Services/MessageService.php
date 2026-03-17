@@ -59,7 +59,7 @@ class MessageService
         // Increment the cached message count for this thread
         $this->incrementMessageCount($threadId);
 
-        return $message->fresh(['files', 'sender', 'gym', 'messageThread']);
+        return $message->fresh(['files', 'sender.files', 'gym', 'messageThread']);
     }
 
     /**
@@ -85,7 +85,7 @@ class MessageService
     {
         $perPage = (int) ($data['per_page'] ?? 20);
 
-        return $this->messageRepository->listByThread($threadId, $perPage, ['files', 'sender', 'gym', 'messageThread']);
+        return $this->messageRepository->listByThread($threadId, $perPage, ['files', 'sender.files', 'gym', 'messageThread']);
     }
 
     /**

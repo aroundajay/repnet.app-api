@@ -3,6 +3,7 @@
 namespace App\Repositories;
 
 use App\Models\User;
+use Illuminate\Support\Arr;
 
 /**
  * User Repository
@@ -38,7 +39,23 @@ class UserRepository
      */
     public function update(string $id, array $data): bool
     {
-        return $this->findById($id)?->update($data) ?? false;
+        $user = $this->findById($id);
+
+        if (!$user) {
+            return false;
+        }
+
+
+        if (!empty($data['files'])) {
+            // Transform [{id, flag}, ...] into {uuid: {flag: ...}, ...} for sync pivot data
+            $files = collect($data['files'])->mapWithKeys(fn ($file) => [
+                $file['id'] => ['flag' => $file['flag']],
+            ])->all();
+
+            $user->files()->sync($files);
+        }
+
+        return $user->update(Arr::except($data, ['files'])) ?? false;
     }
 
     /*

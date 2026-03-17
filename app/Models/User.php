@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -29,6 +31,8 @@ class User extends Authenticatable
      */
     protected $appends = [
         'unread_notifications_count',
+        'profile_picture_url',
+        'cover_picture_url',
     ];
 
     /**
@@ -43,7 +47,7 @@ class User extends Authenticatable
         'email_verified_at',
         'mobile_verified_at',
         'name',
-        'avatar',
+        'bio',
     ];
 
     /**
@@ -154,8 +158,54 @@ class User extends Authenticatable
     /**
      * Get the count of unread notifications for this user.
      */
-    public function getUnreadNotificationsCountAttribute(): int
+    public function unreadNotificationsCount(): Attribute
     {
-        return $this->notifications()->where('read_at', null)->count();
+        return Attribute::make(
+            get: function () {
+                return $this->relationLoaded('notifications')
+                    ? $this->notifications->where('read_at', null)->count()
+                    : 0;
+            },
+        );
+    }
+
+    /**
+     * Get the profile picture URL for this user.
+     */
+    public function profilePictureUrl(): Attribute
+    {
+        return Attribute::make(
+            get: function () {
+                if (!$this->relationLoaded('files')) {
+                    return null;
+                }
+
+                return $this->files->where('pivot.flag', 'PROFILE')->first()?->path;
+            },
+        );
+    }
+
+    /**
+     * Get the cover picture URL for this user.
+     */
+    public function coverPictureUrl(): Attribute
+    {
+        return Attribute::make(
+            get: function () {
+                if (!$this->relationLoaded('files')) {
+                    return null;
+                }
+
+                return $this->files->where('pivot.flag', 'COVER')->first()?->path;
+            },
+        );
+    }
+
+    /**
+     * Get the files for this user.
+     */
+    public function files(): MorphToMany
+    {
+        return $this->morphToMany(File::class, 'fileable')->withPivot('flag');
     }
 }

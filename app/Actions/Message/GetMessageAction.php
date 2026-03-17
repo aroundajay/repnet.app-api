@@ -76,7 +76,7 @@ class GetMessageAction
      */
     public function handle(string $messageId): array
     {
-        $message = $this->messageService->findById($messageId, ['files', 'sender', 'gym', 'messageThread']);
+        $message = $this->messageService->findById($messageId, ['files', 'sender.files', 'gym', 'messageThread']);
 
         return [
             'success'     => true,
