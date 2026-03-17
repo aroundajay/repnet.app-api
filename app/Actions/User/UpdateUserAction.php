@@ -21,6 +21,7 @@ class UpdateUserAction
     {
         return [
             'name' => 'sometimes|string|max:255',
+            'bio' => 'sometimes|string|max:255',
             'password' => 'sometimes|string|min:6|confirmed',
             'current_password' => 'string|required_with:password',
 

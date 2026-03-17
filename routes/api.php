@@ -19,6 +19,7 @@ use App\Actions\Gym\UpdateGymInviteStatusAction;
 use App\Actions\Gym\UpdateGymJoinAction;
 use App\Actions\Otp\SendOtpAction;
 use App\Actions\Otp\VerifyOtpAction;
+use App\Actions\User\GetUserAction;
 use App\Actions\User\UpdateUserAction;
 use App\Actions\Workout\ListWorkoutTypeAction;
 use App\Actions\Amenity\ListAmenityAction;
@@ -118,6 +119,11 @@ Route::prefix('auth')->group(function () {
 
 Route::middleware('auth:sanctum')->group(function () {
     // User routes
+    Route::prefix('users')->group(function () {
+        // Get any user's profile by their ID
+        Route::get('{userId}', GetUserAction::class)->name('users.show');
+    });
+
     Route::prefix('user')->group(function () {
         Route::get('', function () {
             return [
