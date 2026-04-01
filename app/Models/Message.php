@@ -35,6 +35,7 @@ class Message extends Model
         'location_lng',
         'is_public',
         'card_type',
+        'data',
     ];
 
     /**
@@ -43,6 +44,18 @@ class Message extends Model
      * @var list<string>
      */
     protected $hidden = [];
+
+    /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'data' => 'array',
+        ];
+    }
 
     /*
     |--------------------------------------------------------------------------

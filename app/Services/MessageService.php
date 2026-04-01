@@ -49,6 +49,7 @@ class MessageService
             'location_lat' => $data['location_lat'] ?? null,
             'location_lng' => $data['location_lng'] ?? null,
             'card_type'   => $data['card_type'] ?? 'POST',
+            'data'        => $data['data'] ?? null,
         ]);
 
         // Attach any provided file IDs via the polymorphic pivot table

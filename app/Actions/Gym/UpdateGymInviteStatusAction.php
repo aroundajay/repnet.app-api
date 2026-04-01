@@ -73,7 +73,7 @@ class UpdateGymInviteStatusAction
             // send message to gym thread
             $gym     = $this->gymService->findGym($gymId, ['messageThread']);
             // Re-fetch after the upsert (updateGymUser returns bool, not a model)
-            $gymUser = $this->gymService->findGymUserByGymIdAndUserId($gymId, $user_id, ['user']);
+            $gymUser = $this->gymService->findGymUserByGymIdAndUserId($gymId, $user_id, ['user.files']);
             $newUser = $gymUser->user;
 
             CreateMessageAction::dispatch(
@@ -84,6 +84,11 @@ class UpdateGymInviteStatusAction
                     'message'   => "🎉 Welcome {$newUser->name} to {$gym->name}! We're thrilled to have you here. Everyone, please join us in giving them a warm welcome! 👋",
                     'card_type' => 'NEW_MEMBER',
                     'files'     => [],
+                    'data' => [
+                        'id' => $newUser->id,
+                        'name' => $newUser->name,
+                        'profile_picture_url' => $newUser->profile_picture_url,
+                    ]
                 ],
             );
         }

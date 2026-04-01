@@ -48,6 +48,9 @@ return new class extends Migration
                 'COMMENT',
             ])->default('POST');
 
+            // data
+            $table->json('data')->nullable();
+
             // Standard Laravel timestamps and soft deletes
             $table->timestamps();
             $table->softDeletes();

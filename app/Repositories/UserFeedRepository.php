@@ -13,7 +13,7 @@ use Illuminate\Contracts\Pagination\CursorPaginator;
  * Builds an optimised, deduplicated feed of messages for an authenticated user.
  *
  * ┌──────────────────────────────────────────────────────────────────────────┐
- * │  Feed sources (combined via UNION – duplicates eliminated automatically) │
+ * │  Feed sources (combined via UNION ALL – avoids json equality requirement)  │
  * │                                                                          │
  * │  Leg A  All messages from every gym thread where the user holds an       │
  * │         active role (gym_users.status = 'active').                       │
@@ -112,12 +112,17 @@ class UserFeedRepository
         }
 
         // ------------------------------------------------------------------ //
-        // Combine – UNION deduplicates rows that appear in both legs          //
-        // (a gym member's own posts that are also public).                    //
+        // Combine – UNION ALL avoids the equality-operator requirement that   //
+        // PostgreSQL's plain UNION imposes on every column. The `json` type   //
+        // has no equality operator, so UNION would fail with:                 //
+        //   "could not identify an equality operator for type json"           //
+        // UNION ALL is also faster (no sort-and-dedup pass).                  //
+        // The two legs are already disjoint in practice (Leg A is scoped to  //
+        // gym-thread messages; Leg B only picks card_type = POST, is_public). //
         // toBase() strips Eloquent so we get a raw query builder ready for    //
         // unioning; the outer query re-applies Eloquent hydration.            //
         // ------------------------------------------------------------------ //
-        $unionQuery = $gymThreadMessages->toBase()->union($publicPosts->toBase());
+        $unionQuery = $gymThreadMessages->toBase()->unionAll($publicPosts->toBase());
 
         // ------------------------------------------------------------------ //
         // Outer query – wraps the UNION as a derived table so that any extra  //
