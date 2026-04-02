@@ -2,7 +2,9 @@
 
 namespace App\Repositories;
 
+use App\Models\Message;
 use App\Models\User;
+use Illuminate\Contracts\Pagination\CursorPaginator;
 use Illuminate\Support\Arr;
 
 /**
@@ -146,4 +148,43 @@ class UserRepository
     {
         return User::where('mobile', $mobile)->exists();
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | User Posts
+    |--------------------------------------------------------------------------
+    */
+
+    /**
+     * Fetch a cursor-paginated list of public posts sent by a user.
+     *
+     * Only messages where card_type = 'POST' and is_public = true are returned,
+     * ordered by created_at DESC, then id DESC as a deterministic tie-breaker
+     * so cursor pagination stays stable across identical timestamps.
+     *
+     * @param  string $userId  UUID of the target user
+     * @param  int    $perPage Items per cursor page
+     * @param  array  $with    Eloquent relations to eager-load
+     * @return CursorPaginator
+     */
+    public function getPublicPosts(
+        string $userId,
+        int $perPage = 20,
+        array $with = [],
+    ): CursorPaginator {
+        $query = Message::query()
+            ->where('sender_id', $userId)
+            ->where('card_type', 'POST')
+            ->where('is_public', true)
+            ->whereNull('deleted_at')
+            ->orderBy('created_at', 'desc')
+            ->orderBy('id', 'desc'); // deterministic tie-breaker for cursor pagination
+
+        if (!empty($with)) {
+            $query->with($with);
+        }
+
+        return $query->cursorPaginate($perPage);
+    }
 }
+

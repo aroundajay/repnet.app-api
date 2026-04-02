@@ -109,6 +109,25 @@ class UserFeedRepository
             $publicPosts
                 ->whereBetween('messages.location_lat', [$bbox['min_lat'], $bbox['max_lat']])
                 ->whereBetween('messages.location_lng', [$bbox['min_lng'], $bbox['max_lng']]);
+
+            // Haversine formula – Earth radius 6 371 km
+            // We use LEAST(1.0, ...) to prevent float precision errors from throwing out of bounds in acos().
+            // We use COALESCE(..., 0) to prevent NULL distance_km for messages without location,
+            // which would crash Laravel's CursorPaginator with "Illegal operator and value combination."
+            $haversine = "
+                COALESCE(6371 * acos(
+                    LEAST(1.0, cos(radians(?))
+                    * cos(radians(messages.location_lat))
+                    * cos(radians(messages.location_lng) - radians(?))
+                    + sin(radians(?))
+                    * sin(radians(messages.location_lat)))
+                ), 0)
+            ";
+
+            // Push distance_km directly onto the subqueries so the UNION derived table naturally has the column,
+            // allowing CursorPaginator to safely apply its WHERE clauses onto the alias without PG errors.
+            $gymThreadMessages->selectRaw("{$haversine} AS distance_km", [$latitude, $longitude, $latitude]);
+            $publicPosts->selectRaw("{$haversine} AS distance_km", [$latitude, $longitude, $latitude]);
         }
 
         // ------------------------------------------------------------------ //
@@ -131,30 +150,13 @@ class UserFeedRepository
         // ------------------------------------------------------------------ //
         $outer = Message::withoutGlobalScopes()->fromSub($unionQuery, 'messages');
 
-        if ($latitude !== null && $longitude !== null) {
-            // Haversine formula – Earth radius 6 371 km
-            $haversine = "
-                6371 * acos(
-                    cos(radians(?))
-                    * cos(radians(messages.location_lat))
-                    * cos(radians(messages.location_lng) - radians(?))
-                    + sin(radians(?))
-                    * sin(radians(messages.location_lat))
-                )
-            ";
+        $outer->select('messages.*')->orderBy('created_at', 'desc');
 
-            $outer
-                ->selectRaw('messages.*')
-                ->selectRaw("({$haversine}) AS distance_km", [$latitude, $longitude, $latitude])
-                ->orderBy('created_at', 'desc')
-                ->orderBy('distance_km', 'asc')
-                ->orderBy('id', 'desc'); // deterministic tie-breaker for cursor pagination
-        } else {
-            $outer
-                ->select('messages.*')
-                ->orderBy('created_at', 'desc')
-                ->orderBy('id', 'desc'); // deterministic tie-breaker for cursor pagination
+        if ($latitude !== null && $longitude !== null) {
+            $outer->orderBy('distance_km', 'asc');
         }
+
+        $outer->orderBy('id', 'desc'); // deterministic tie-breaker for cursor pagination
 
         if (!empty($with)) {
             $outer->with($with);

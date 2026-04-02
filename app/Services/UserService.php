@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\User;
 use App\Repositories\UserRepository;
+use Illuminate\Contracts\Pagination\CursorPaginator;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Hash;
 
@@ -173,5 +174,29 @@ class UserService
     public function existsByMobile(string $mobile): bool
     {
         return $this->repository->existsByMobile($mobile);
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | User Posts
+    |--------------------------------------------------------------------------
+    */
+
+    /**
+     * Fetch a cursor-paginated list of public posts sent by a user.
+     *
+     * @param  string $userId UUID of the target user
+     * @param  array  $data   Validated request data: per_page?, cursor?
+     * @return CursorPaginator
+     */
+    public function getPublicPosts(string $userId, array $data): CursorPaginator
+    {
+        $perPage = (int) ($data['per_page'] ?? 20);
+
+        return $this->repository->getPublicPosts(
+            userId: $userId,
+            perPage: $perPage,
+            with: ['files', 'sender.files', 'gym', 'messageThread'],
+        );
     }
 }
