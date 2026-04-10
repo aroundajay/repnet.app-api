@@ -46,7 +46,7 @@ class CreateGymRequest extends FormRequest
 
             // metadata
             'metadata' => ['array'],
-            'metadata.*.key' => ['required', 'in:address,operating_hours,offers_personal_training'],
+            'metadata.*.key' => ['required', 'in:address,offers_personal_training'],
             'metadata.*.value' => ['nullable'],
 
             // files

@@ -9,14 +9,13 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 /**
  * Gym model representing fitness facilities.
- * 
+ *
  * Supports location-based discovery and public/private visibility.
  * Has role-based membership system (OWNER, TRAINER, MEMBER).
  */
@@ -64,16 +63,13 @@ class Gym extends Model
      */
     protected $updateable_metadata = [
         'address',
-        'operating_hours',
         'offers_personal_training',
     ];
 
     /**
      * Array of keys that are multiple updateable of metadata
      */
-    protected $multiple_metadata = [
-        'operating_hours',
-    ];
+    protected $multiple_metadata = [];
 
     /**
      * Array of keys that are hide in metadata
@@ -158,6 +154,14 @@ class Gym extends Model
     public function workoutTypes(): BelongsToMany
     {
         return $this->belongsToMany(WorkoutType::class, 'gym_workout_types');
+    }
+
+    /**
+     * Get all gym shifts for this gym.
+     */
+    public function gymShifts(): HasMany
+    {
+        return $this->hasMany(GymShift::class);
     }
 
     /*

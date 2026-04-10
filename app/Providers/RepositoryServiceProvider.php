@@ -5,6 +5,8 @@ namespace App\Providers;
 use App\Repositories\AmenityRepository;
 use App\Repositories\FileRepository;
 use App\Repositories\GymRepository;
+use App\Repositories\GymShiftRepository;
+use App\Repositories\GymShiftPlanRepository;
 use App\Repositories\GymUserRepository;
 use App\Repositories\NotificationRepository;
 use App\Repositories\OtpRepository;
@@ -45,6 +47,20 @@ class RepositoryServiceProvider extends ServiceProvider {
          */
         $this->app->singleton(GymUserRepository::class, function () {
             return new GymUserRepository();
+        });
+
+        /**
+         * Gym Shift Repository
+         */
+        $this->app->singleton(GymShiftRepository::class, function () {
+            return new GymShiftRepository();
+        });
+
+        /**
+         * Gym Shift Plan Repository
+         */
+        $this->app->singleton(GymShiftPlanRepository::class, function () {
+            return new GymShiftPlanRepository();
         });
 
         /**

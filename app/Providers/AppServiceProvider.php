@@ -13,6 +13,10 @@ use App\Repositories\WorkoutTypeRepository;
 use App\Services\AmenityService;
 use App\Services\FileService;
 use App\Services\GymService;
+use App\Services\GymShiftService;
+use App\Services\GymShiftPlanService;
+use App\Repositories\GymShiftRepository;
+use App\Repositories\GymShiftPlanRepository;
 use App\Services\NotificationService;
 use App\Services\OtpService;
 use App\Services\SmsService;
@@ -52,6 +56,24 @@ class AppServiceProvider extends ServiceProvider
             return new GymService(
                 $app->make(GymRepository::class),
                 $app->make(GymUserRepository::class)
+            );
+        });
+
+        /**
+         * Register Gym Shift service
+         */
+        $this->app->singleton(GymShiftService::class, function ($app) {
+            return new GymShiftService(
+                $app->make(GymShiftRepository::class)
+            );
+        });
+
+        /**
+         * Register Gym Shift Plan service
+         */
+        $this->app->singleton(GymShiftPlanService::class, function ($app) {
+            return new GymShiftPlanService(
+                $app->make(GymShiftPlanRepository::class)
             );
         });
 

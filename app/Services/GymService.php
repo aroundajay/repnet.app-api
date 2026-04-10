@@ -79,7 +79,7 @@ class GymService
             'disabled_at' => null,
         ]);
 
-        return $gym->fresh(['files', 'amenities', 'workoutTypes']);
+        return $gym->fresh(['files', 'amenities', 'workoutTypes', 'gymShifts.gymShiftPlans']);
     }
 
     /**
@@ -112,7 +112,7 @@ class GymService
             $gym->workoutTypes()->sync($data['workout_types']);
         }
 
-        return $gym->fresh(['files', 'amenities', 'workoutTypes']);
+        return $gym->fresh(['files', 'amenities', 'workoutTypes', 'gymShifts.gymShiftPlans']);
     }
 
     /**

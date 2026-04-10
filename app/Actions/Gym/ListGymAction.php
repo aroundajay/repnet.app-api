@@ -45,7 +45,7 @@ class ListGymAction
         $paginator = $this->gymService->list(array_merge(
             $data,
             [
-                'with' => ['files', 'amenities', 'workoutTypes']
+                'with' => ['files', 'amenities', 'workoutTypes', 'gymShifts.gymShiftPlans']
             ]
         ));
 

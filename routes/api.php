@@ -35,6 +35,13 @@ use App\Actions\Message\GetMessageAction;
 use App\Actions\Message\ToggleMessageReactionAction;
 use App\Actions\Message\DeleteMessageAction;
 use App\Actions\Message\ListMessageReactedUsersAction;
+use App\Actions\GymShift\CreateGymShiftAction;
+use App\Actions\GymShift\ListGymShiftAction;
+use App\Actions\GymShift\UpdateGymShiftAction;
+use App\Actions\GymShift\DeleteGymShiftAction;
+use App\Actions\GymShiftPlan\CreateGymShiftPlanAction;
+use App\Actions\GymShiftPlan\ListGymShiftPlanAction;
+use App\Actions\GymShiftPlan\DeleteGymShiftPlanAction;
 use App\Services\GymService;
 
 use Illuminate\Support\Facades\Route;
@@ -42,7 +49,7 @@ use Illuminate\Support\Facades\Route;
 |--------------------------------------------------------------------------
 | Public Routes (No Authentication Required)
 |--------------------------------------------------------------------------
-*/
+|*/
 
 /*
 |--------------------------------------------------------------------------
@@ -73,7 +80,7 @@ Route::prefix('gyms')->group(function () {
             'status_code' => 200,
             'message' => 'User fetched successfully',
             'data' => [
-                'gym' => app()->make(GymService::class)->findGym(request()->gymId, ['files', 'amenities', 'workoutTypes']),
+                'gym' => app()->make(GymService::class)->findGym(request()->gymId, ['files', 'amenities', 'workoutTypes', 'gymShifts.gymShiftPlans']),
             ],
         ];
     })->name('gyms.show');
@@ -134,7 +141,7 @@ Route::middleware('auth:sanctum')->group(function () {
                 'success' => true,
                 'status_code' => 200,
                 'message' => 'User fetched successfully',
-                'data' => request()->user()->fresh(['gyms.files', 'gyms.messageThread', 'files', 'notifications']),
+                'data' => request()->user()->fresh(['gyms.files', 'gyms.messageThread', 'files', 'notifications', 'gyms.gymShifts.gymShiftPlans']),
             ];
         });
         Route::put('', UpdateUserAction::class)->name('user.update');
@@ -162,6 +169,21 @@ Route::middleware('auth:sanctum')->group(function () {
 
         // Gym routes - list gym members with optional search (q) and status filter
         Route::get('{gymId}/users', ListGymUsersAction::class)->name('gyms.users.list');
+
+        // Gym Shift routes
+        Route::prefix('{gymId}/shifts')->group(function () {
+            Route::post('', CreateGymShiftAction::class)->name('gyms.shifts.create');
+            Route::get('', ListGymShiftAction::class)->name('gyms.shifts.list');
+            Route::patch('{shiftId}', UpdateGymShiftAction::class)->name('gyms.shifts.update');
+            Route::delete('{shiftId}', DeleteGymShiftAction::class)->name('gyms.shifts.delete');
+
+            // Gym Shift Plan routes
+            Route::prefix('{shiftId}/plans')->group(function () {
+                Route::post('', CreateGymShiftPlanAction::class)->name('gyms.shifts.plans.create');
+                Route::get('', ListGymShiftPlanAction::class)->name('gyms.shifts.plans.list');
+                Route::delete('{planId}', DeleteGymShiftPlanAction::class)->name('gyms.shifts.plans.delete');
+            });
+        });
     });
 
     // File routes
